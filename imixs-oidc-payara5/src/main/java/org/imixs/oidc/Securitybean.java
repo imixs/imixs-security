@@ -14,7 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import fish.payara.cdi.auth.roles.RolesPermitted;
-import fish.payara.security.annotations.ClaimsDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import fish.payara.security.openid.api.OpenIdContext;
 
@@ -31,14 +30,16 @@ import fish.payara.security.openid.api.OpenIdContext;
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@OpenIdAuthenticationDefinition( //
-        providerURI = "${payara.security.openid.providerURI}", //
-        clientId = "${payara.security.openid.clientId}", //
-        clientSecret = "${payara.security.openid.clientSecret}", //
-        redirectURI = "${payara.security.openid.redirectURI}", //
+@OpenIdAuthenticationDefinition( // find details here:
+                                 // https://docs.payara.fish/enterprise/docs/documentation/payara-server/public-api/openid-connect-support.html
+        // providerURI = "${payara.security.openid.providerURI}", //
+        // clientId = "${payara.security.openid.clientId}", //
+        // clientSecret = "${payara.security.openid.clientSecret}", //
+        // redirectURI = "${payara.security.openid.redirectURI}", //
         scope = {
-                "email", "openid", "profile" }, //
-        claimsDefinition = @ClaimsDefinition(callerGroupsClaim = "http://www.imixs.org/roles") //
+                "email", "openid", "profile" } //
+// claimsDefinition = @ClaimsDefinition(callerGroupsClaim =
+// "http://www.imixs.org/roles") //
 )
 public class Securitybean implements Serializable {
 
@@ -70,27 +71,9 @@ public class Securitybean implements Serializable {
     }
 
     @GET
-    @Path("/allowedVIP")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-    @Produces("text/plain")
-    public String allowedVIP() {
-        logger.info("========> allowedVIP");
-        return "Allowed for VIPs only!";
-    }
-
-    @GET
-    @Path("/forbidden")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-    @Produces("text/plain")
-    public String forbidden() {
-        logger.info("========> forbidden");
-        return "Should not be here";
-    }
-
-    @GET
     @Produces("text/plain")
     public String hello() {
-        return "Hello, World!";
+        return "Imixs Security - OIDC for Payara 5\n\n  /debug - show session details";
     }
 
     @GET
