@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.imixs.security</groupId>
+	<artifactId>imixs-security</artifactId>
+	<name>Imixs Security</name>
+	<packaging>pom</packaging>
+	<version>2.0.0-SNAPSHOT</version>
+
+	<modules>
+		<module>imixs-jwt</module>
+		<module>imixs-oidc-payara5</module>
+	</modules>
+
+	
+
+	<description>
+		Imixs-Security is a side project form Imixs-Workflow providing different security solutions and libraries to be used to protect enterprise applications.
+	</description>
+
+	<url>https://github.com/imixs/imixs-security</url>
+	<organization>
+		<name>Imixs Software Solutions GmbH</name>
+		<url>http://www.imixs.com</url>
+	</organization>
+	<inceptionYear>2023</inceptionYear>
+
+	<developers>
+		<developer>
+			<id>rsoika</id>
+			<name>Ralph Soika</name>
+			<email>ralph.soika@imixs.com</email>
+			<url>http://blog.imixs.org/</url>
+			<organization>Imixs Software Solutions GmbH</organization>
+			<organizationUrl>http://www.imixs.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+				<role>testing</role>
+			</roles>
+			<timezone>2</timezone>
+		</developer>
+
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:imixs/imixs-security.git</connection>
+		<developerConnection>scm:git:git@github.com:imixs/imixs-security.git</developerConnection>
+		<url>https://github.com/imixs/imixs-security/</url>
+		<tag>HEAD</tag>
+	</scm>	
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/imixs/imixs-security/issues</url>
+	</issueManagement>
+
+	<mailingLists>
+		<!-- no mailing lists supported -->
+	</mailingLists>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License - v 2.0</name>
+			<url>https://www.eclipse.org/legal/epl-2.0/</url>
+			<distribution>repo</distribution>
+			<comments>All the results of thi  project are subject to the Eclipse Public License - v 2.0 licensing model. </comments>
+		</license>
+	</licenses>
+
+	<build>
+		
+	</build>
+
+	<reporting>
+	
+	</reporting>
+
+
+	<!-- Distributen Management oss.sonatype.org -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
+</project>

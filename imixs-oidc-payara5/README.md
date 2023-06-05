@@ -198,3 +198,9 @@ After you have configured the library and deployed your application you can requ
     https://localhost:8181/api/oidc/debug
 
 This information can be helpful to analyze tokens and Claims returned by the OpenID provider.
+
+# Build from Sources
+
+To build the library form sources you can run the maven command:
+
+    $ mvn clean install
