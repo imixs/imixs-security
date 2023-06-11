@@ -8,10 +8,9 @@
 
 	<modules>
 		<module>imixs-jwt</module>
+		<module>imixs-oidc</module>		
 		<module>imixs-oidc-payara5</module>
 	</modules>
-
-	
 
 	<description>
 		Imixs-Security is a side project form Imixs-Workflow providing different security solutions and libraries to be used to protect enterprise applications.
