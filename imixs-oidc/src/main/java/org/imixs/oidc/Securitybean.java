@@ -9,6 +9,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.authentication.mechanism.http.OpenIdAuthenticationMechanismDefinition;
+import jakarta.security.enterprise.authentication.mechanism.http.openid.ClaimsDefinition;
 import jakarta.security.enterprise.identitystore.openid.OpenIdContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -28,17 +29,19 @@ import jakarta.ws.rs.core.MediaType;
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@OpenIdAuthenticationMechanismDefinition( // find details here:
-        // https://docs.payara.fish/enterprise/docs/documentation/payara-server/public-api/openid-connect-support.html
-        // providerURI = "${payara.security.openid.providerURI}", //
-        // clientId = "${payara.security.openid.clientId}", //
-        // clientSecret = "${payara.security.openid.clientSecret}", //
-        // redirectURI = "${payara.security.openid.redirectURI}", //
-        scope = {
-                "email", "openid", "profile" } //
-// claimsDefinition = @ClaimsDefinition(callerGroupsClaim =
-// "http://www.imixs.org/roles") //
+@OpenIdAuthenticationMechanismDefinition( //
+        clientId = "${oidcConfig.clientId}", //
+        clientSecret = "${oidcConfig.clientSecret}", //
+        redirectURI = "${baseURL}/callback", //
+        providerURI = "${oidcConfig.issuerUri}", //
+        tokenAutoRefresh = true, //
+        // extraParameters = { "audience=https://<YOUR-DOMAIN>.eu.auth0.com/api/v2/" },
+        // //
+        claimsDefinition = @ClaimsDefinition(callerGroupsClaim = "http://www.imixs.org/roles")
+
 )
+// Caller Groups:
+// OpenIdAuthenticationMechanismDefinition.claimsDefinition.callerGroupsClaim.
 public class Securitybean implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -1,18 +1,16 @@
 # OpenID Connect for Jakarta EE 10
 
-This project provides a generic library to setup an OpenID Connect security mechanism for web applications running on Jakarta EE 10. Jakarta EE 10 provides a security API to support OpenID Connect.  This implementation was also inspired by [Andrew Hughes blogpost about Jakarta EE and OIDC](https://auth0.com/blog/jakarta-ee-oidc/).
+This project provides a generic library to setup an OpenID Connect security mechanism for web applications running on Jakarta EE 10. Jakarta EE 10 provides a security API to support OpenID Connect. This implementation was also inspired by [Andrew Hughes blogpost about Jakarta EE and OIDC](https://auth0.com/blog/jakarta-ee-oidc/).
 
-
+Specification details can be found [here](https://jakarta.ee/specifications/security/3.0/jakarta-security-spec-3.0.html#openid-connect-annotation).
 
 ## Background
 
-Since Jakarta EE 8 a new Security API was introduced providing a new standard and portable way of handling security concerns in Java containers. This new standard allows to configure the authentication mechanism of an application directly in a CDI bean, instead through the web.xml file. So web applications can now configure authentication mechanisms by providing implementations of the new `HttpAuthenticationMechanism` interface. Beside the standard implementations for Basic, Form and CustomForm authentication Jakarta EE 10 adapted this concept to provide an authentication mechanism for OpenID Connect. We introduced this library for an easy security setup of Web Applications. The library  can be added simply as a dependency to a web application project.
-
-
+Since Jakarta EE 8 a new Security API was introduced providing a new standard and portable way of handling security concerns in Java containers. This new standard allows to configure the authentication mechanism of an application directly in a CDI bean, instead through the web.xml file. So web applications can now configure authentication mechanisms by providing implementations of the new `HttpAuthenticationMechanism` interface. Beside the standard implementations for Basic, Form and CustomForm authentication Jakarta EE 10 adapted this concept to provide an authentication mechanism for OpenID Connect. We introduced this library for an easy security setup of Web Applications. The library can be added simply as a dependency to a web application project.
 
 ## Maven Dependecy
 
-To use this library your application needs to be deployed into Payara 5 Platform. You simply need to add the following maven dependencies to your pom.xml:
+To use this library your application needs to be deployed into Jakarta EE 10 Application. You simply need to add the following maven dependencies to your pom.xml:
 
 ```xml
     <!-- Payara 5 OpenID Connect-->
@@ -25,30 +23,15 @@ To use this library your application needs to be deployed into Payara 5 Platform
 
 The Jakarta EE 10 Runtime automatically scann this library during deployment and initializes the OpenID Connect auth mechanism automatically for your application. This is possible because of the `beans.xml` file located in the META-INF folder of this library. This library also includes a `CallbackServlet` that is used to redirect the user into your application after a successful login. So no additional implementation should be necessary.
 
-
 ## Configuration
 
-The Payara5 OpenID Client configuration attributes can be configured via Microprofile Config using the following properties :
+The OpenID Client configuration attributes can be configured via Microprofile Config using the following properties :
 
 ```
-    payara.security.openid.providerURI
-    payara.security.openid.clientId
-    payara.security.openid.clientSecret
-    payara.security.openid.redirectURI
+      OIDCCONFIG_ISSUERURI: "<your provider url>"
+      OIDCCONFIG_CLIENTID: "xxxxxxxxxx"
+      OIDCCONFIG_CLIENTSECRET: "xxxxxxxxxx"
 ```
-
-Microprofile Config is part of Payara 5 and the properties value take precedence over @OpenIdAuthenticationDefinition annotation values.
-
-Setting the properties in a Docker or a Kubernetes environment use the corresponding Unix style to name the variables:
-
-```
-    PAYARA_SECURITY_OPENID_PROVIDERURI
-    PAYARA_SECURITY_OPENID_CLIENTID
-    PAYARA_SECURITY_OPENID_CLIENTSECRET
-    PAYARA_SECURITY_OPENID_REDIRECTURI
-```
-
-A full list of all possible configuration values can be found [on the Payara OpenID Connect Support page](https://docs.payara.fish/enterprise/docs/documentation/payara-server/public-api/openid-connect-support.html).
 
 ### The ClaimsDefinition
 
@@ -68,6 +51,31 @@ When using this library you can set the GroupsClaim with the property `payara.se
 
 To setup Auth0 with user roles can be a little tricky but you will find a good tutorial [here](https://auth0.com/blog/jakarta-ee-oidc/).
 
+### Wildfly
+
+To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disalbe
+
+This can be done either by the wildfly-cli command:
+
+    /subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain, integrated-jaspi=false)
+
+or by changing the standalone.xml file:
+
+```xml
+            .......
+            <application-security-domains>
+                <!-- disable integrated jaspi! -->
+                <application-security-domain name="other" security-domain="ApplicationDomain" integrated-jaspi="false" />
+            </application-security-domains>
+            .......
+```
+
+### Auth0.com
+
+For auth0.com you need to provide an additional parameter to resolve role names configured in auth0.com
+
+    extraParameters = { "audience=https://<YOUR-DOMAIN>.auth0.com/api/v2/" }, //
+
 ## Protecting CDI Beans, EJBs and Pages
 
 Within you application code you work with the usual Jakarta EE security API. There is no need to use any additional OpenID configuration or annotations.
@@ -75,8 +83,8 @@ Within you application code you work with the usual Jakarta EE security API. The
 The following example shows a EJB protected with the role 'super-admin'
 
 ```java
-@DeclareRoles({ "super-admin" })
-@RolesAllowed({ "super-admin" })
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Named
 @RequestScoped
 public class ConfigBean {
@@ -94,8 +102,8 @@ public class ConfigBean {
 In the same way you can protect your EJBs.
 
 ```java
-@DeclareRoles({ "super-admin" })
-@RolesAllowed({ "super-admin" })
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
 public class ConfigService {
@@ -115,11 +123,11 @@ Protecting JSF pages or static html pages can be done as usual in the web.xml fi
 			<url-pattern>/api/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>super-admin</role-name>
+			<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-role>
-		<role-name>super-admin</role-name>
+		<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
 	</security-role>
 
 ....
@@ -134,8 +142,8 @@ Protecting JSF pages or static html pages can be done as usual in the web.xml fi
 	<context-root>/</context-root>
 
 	<security-role-mapping>
-		<role-name>super-admin</role-name>
-		<group-name>super-admin</group-name>
+		<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
+		<group-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</group-name>
 	</security-role-mapping>
 
 </glassfish-web-app>
