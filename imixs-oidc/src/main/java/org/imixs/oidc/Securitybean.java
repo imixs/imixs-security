@@ -4,12 +4,9 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.logging.Logger;
 
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.authentication.mechanism.http.OpenIdAuthenticationMechanismDefinition;
-import jakarta.security.enterprise.authentication.mechanism.http.openid.ClaimsDefinition;
 import jakarta.security.enterprise.identitystore.openid.OpenIdContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -17,31 +14,25 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 /**
+ * This class implements a OpenIdAuthenticationMechanismDefinition for
+ * Authentication against an OpenID Provider (e.g. Keycloak).
+ * is an OpenID Connect Default implementation
  * 
- * See: https://auth0.com/blog/jakarta-ee-oidc/
+ * See also:
+ * 
+ * - https://auth0.com/blog/jakarta-ee-oidc/
+ * - https://blogs.nologin.es/rickyepoderi/
  * 
  */
-
-// @Named
 @RequestScoped
 @Path("/oidc")
 @Produces({ MediaType.TEXT_PLAIN })
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-        "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-        "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @OpenIdAuthenticationMechanismDefinition( //
         clientId = "${oidcConfig.clientId}", //
         clientSecret = "${oidcConfig.clientSecret}", //
         redirectURI = "${baseURL}/callback", //
-        providerURI = "${oidcConfig.issuerUri}", //
-        tokenAutoRefresh = true, //
-        // extraParameters = { "audience=https://<YOUR-DOMAIN>.eu.auth0.com/api/v2/" },
-        // //
-        claimsDefinition = @ClaimsDefinition(callerGroupsClaim = "http://www.imixs.org/roles")
-
+        providerURI = "${oidcConfig.issuerUri}" //
 )
-// Caller Groups:
-// OpenIdAuthenticationMechanismDefinition.claimsDefinition.callerGroupsClaim.
 public class Securitybean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -53,49 +44,43 @@ public class Securitybean implements Serializable {
     @Inject
     private OpenIdContext context;
 
+    /**
+     * Debug endpoint prints session details into the server log
+     * 
+     * @return
+     */
     @GET
-    @Path("/principal")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-    @Produces("text/plain")
-    public String getPrincipal() {
-        logger.info("========> getPrincipal");
-        return principal.getName();
-    }
-
-    @GET
-    @Produces("text/plain")
-    public String hello() {
-        return "Imixs Security - OIDC for Payara 5\n\n  /debug - show session details";
-    }
-
-    @GET
-    @Path("/debug")
-    // @RolesAllowed({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
     @Produces("text/plain")
     public String sessionInfoAuth() {
-
-        StringBuilder stringBuilder = new StringBuilder();
-
+        String message = "";
         try {
-            logger.info("collecting OpenID context information...");
+            logger.info("Imixs-Security-OIDC - collecting context information... (see details in server log)");
 
-            // Here's the unique subject identifier within the issuer
-            if (context.getSubject() == null) {
-                stringBuilder.append("\nSubject = undefined");
+            System.out.println("=========================================");
+            if (principal != null) {
+                System.out.println("  Principal name: " + principal.getName());
             } else {
-                stringBuilder.append("\nSubject = " + context.getSubject());
+                System.out.println("  Principal resolved to null!");
             }
-            // Here's the access token
-            stringBuilder.append("\nAccess token = " + context.getAccessToken());
-            // Here's the identity token
-            stringBuilder.append("\nID token = " + context.getIdentityToken());
-            // Here's the user claims
-            stringBuilder.append("\n\nClaims json = " + context.getClaimsJson());
+            // Here's the unique subject identifier within the issuer
+            if (context == null) {
+                message = "Failed to resolve OpenIdContext!";
+            } else {
+                System.out.println("  Subject = " + context.getSubject());
+                System.out.println("  Access token = " + context.getAccessToken());
+                System.out.println("  ID token = " + context.getIdentityToken());
+                System.out.println("  Claims json = " + context.getClaimsJson());
+                System.out.println("=========================================");
+                message = "Imixs-Security-OIDC ==> OK \n" + //
+                        "User Principal      ==> " + principal.getName()
+                        + "\n\nSession details are available on server log";
+            }
         } catch (Exception e) {
-
-            stringBuilder.append("\n\nFailed to resolve OpenIdContext: " + e.getMessage());
+            message = "Failed to resolve OpenIdContext!";
+            logger.warning(message);
+            logger.warning(e.toString());
         }
-        return stringBuilder.toString();
+        return message;
     }
 
 }

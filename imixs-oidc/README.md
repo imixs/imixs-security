@@ -2,7 +2,13 @@
 
 This project provides a generic library to setup an OpenID Connect security mechanism for web applications running on Jakarta EE 10. Jakarta EE 10 provides a security API to support OpenID Connect. This implementation was also inspired by [Andrew Hughes blogpost about Jakarta EE and OIDC](https://auth0.com/blog/jakarta-ee-oidc/).
 
-Specification details can be found [here](https://jakarta.ee/specifications/security/3.0/jakarta-security-spec-3.0.html#openid-connect-annotation).
+More information:
+
+ - [Jakarte EE Specification details](https://jakarta.ee/specifications/security/3.0/jakarta-security-spec-3.0.html#openid-connect-annotation)
+ - [Keycloak integration](https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html)
+ - [Securing WildFly Apps](https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/)
+
+
 
 ## Background
 
@@ -53,7 +59,7 @@ To setup Auth0 with user roles can be a little tricky but you will find a good t
 
 ### Wildfly
 
-To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disalbe
+To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disable the integrated jaspi module. 
 
 This can be done either by the wildfly-cli command:
 
@@ -69,6 +75,8 @@ or by changing the standalone.xml file:
             </application-security-domains>
             .......
 ```
+
+Find also other options for Wildfly here: https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
 
 ### Auth0.com
 
@@ -151,11 +159,11 @@ Protecting JSF pages or static html pages can be done as usual in the web.xml fi
 
 ## Debug
 
-After you have configured the library and deployed your application you can request details about the authenticated user with the Rest API endpoint /debug:
+After you have configured the library and deployed your application you can request details about the authenticated user by the Rest API endpoint /oidc:
 
-    https://localhost:8181/api/oidc/debug
+    http://localhost:8080/api/oidc
 
-This information can be helpful to analyze tokens and Claims returned by the OpenID provider.
+This endpoint will print details about the current OpenID session into the server log. The information can be helpful to analyze tokens and Claims returned by the OpenID provider.
 
 # Build from Sources
 
