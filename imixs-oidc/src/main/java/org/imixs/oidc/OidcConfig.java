@@ -33,6 +33,10 @@ public class OidcConfig implements Serializable {
     @ConfigProperty(name = "OIDCCONFIG_CLIENTSECRET", defaultValue = "undefined")
     String clientSecret;
 
+    @Inject
+    @ConfigProperty(name = "OIDCCONFIG_REDIRECTURL", defaultValue = "undefined")
+    String redirectURL;
+
     public String getClientId() {
         return clientId;
     }
@@ -43,6 +47,10 @@ public class OidcConfig implements Serializable {
 
     public String getIssuerUri() {
         return issuerUri;
+    }
+
+    public String getRedirectURL() {
+        return redirectURL;
     }
 
 }

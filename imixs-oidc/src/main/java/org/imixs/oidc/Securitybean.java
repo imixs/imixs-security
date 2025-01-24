@@ -4,13 +4,20 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.logging.Logger;
 
+import javax.annotation.security.RolesAllowed;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import jakarta.security.enterprise.authentication.mechanism.http.OpenIdAuthenticationMechanismDefinition;
+import jakarta.security.enterprise.identitystore.openid.AccessToken;
+import jakarta.security.enterprise.identitystore.openid.IdentityToken;
 import jakarta.security.enterprise.identitystore.openid.OpenIdContext;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 
 /**
@@ -51,36 +58,68 @@ public class Securitybean implements Serializable {
      */
     @GET
     @Produces("text/plain")
-    public String sessionInfoAuth() {
-        String message = "";
+    public String sessionInfoAuth(@Context HttpServletRequest request) {
+        StringBuilder output = new StringBuilder();
         try {
-            logger.info("Imixs-Security-OIDC - collecting context information... (see details in server log)");
+            String forwardedProto = request.getHeader("X-Forwarded-Proto");
+            output.append("\n=== OIDC Session Information ===\n")
+                    .append("X-Forwarded-Proto: ").append(forwardedProto).append("\n");
 
-            System.out.println("=========================================");
             if (principal != null) {
-                System.out.println("  Principal name: " + principal.getName());
+                output.append("Principal: ").append(principal.getName()).append("\n");
             } else {
-                System.out.println("  Principal resolved to null!");
+                String msg = "Warning: Principal resolved to null!";
+                output.append(msg).append("\n");
             }
-            // Here's the unique subject identifier within the issuer
+
             if (context == null) {
-                message = "Failed to resolve OpenIdContext!";
-            } else {
-                System.out.println("  Subject = " + context.getSubject());
-                System.out.println("  Access token = " + context.getAccessToken());
-                System.out.println("  ID token = " + context.getIdentityToken());
-                System.out.println("  Claims json = " + context.getClaimsJson());
-                System.out.println("=========================================");
-                message = "Imixs-Security-OIDC ==> OK \n" + //
-                        "User Principal      ==> " + principal.getName()
-                        + "\n\nSession details are available on server log";
+                String msg = "Error: Failed to resolve OpenIdContext!";
+                logger.severe(msg);
+                return msg;
             }
+
+            output.append("\nOIDC Details:\n")
+                    .append("Subject: ").append(context.getSubject()).append("\n")
+                    .append("Access Token: ").append(maskAccessToken(context.getAccessToken())).append("\n")
+                    .append("ID Token: ").append(maskIdentityToken(context.getIdentityToken())).append("\n")
+                    .append("Claims: ").append(formatJsonObject(context.getClaimsJson())).append("\n")
+                    .append("===============================\n");
+
+            logger.info(output.toString());
+            return output.toString();
+
         } catch (Exception e) {
-            message = "Failed to resolve OpenIdContext!";
-            logger.warning(message);
-            logger.warning(e.toString());
+            String error = "Failed to resolve OpenIdContext: " + e.getMessage();
+            logger.severe(error);
+            return error;
         }
-        return message;
     }
 
+    @GET
+    @Path("/principal")
+    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
+    @Produces("text/plain")
+    public String getPrincipal() {
+        logger.info("========> getPrincipal");
+        return principal.getName();
+    }
+
+    // Access Token maskieren
+    private String maskAccessToken(AccessToken token) {
+        if (token == null)
+            return "null";
+        return token.getToken().substring(0, Math.min(token.getToken().length(), 20)) + "...";
+    }
+
+    private String maskIdentityToken(IdentityToken token) {
+        if (token == null)
+            return "null";
+        return token.getToken().substring(0, Math.min(token.getToken().length(), 20)) + "...";
+    }
+
+    private String formatJsonObject(JsonObject json) {
+        if (json == null)
+            return "null";
+        return json.toString().replaceAll(",", ",\n    ");
+    }
 }
