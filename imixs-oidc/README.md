@@ -4,6 +4,7 @@ This project provides a generic library to setup an OpenID Connect security mech
 
 More information:
 
+- [Imixs Office Workflow OIDC](https://doc.office-workflow.com/auth/oidc/keycloak.html)
 - [Jakarte EE Specification details](https://jakarta.ee/specifications/security/3.0/jakarta-security-spec-3.0.html#openid-connect-annotation)
 - [Keycloak integration](https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html)
 - [Securing WildFly Apps](https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/)
@@ -34,10 +35,12 @@ The OpenID Client configuration attributes can be configured via Microprofile Co
 
 | Environment Param       | Description                                           |
 | ----------------------- | ----------------------------------------------------- |
-| OIDCCONFIG_ISSUERURI    | endpoint for indentity provider                       |
+| OIDCCONFIG_ISSUERURI    | endpoint for identity provider                        |
 | OIDCCONFIG_CLIENTID     | OIDC Client ID                                        |
 | OIDCCONFIG_CLIENTSECRET | Client secret                                         |
 | OIDCCONFIG_REDIRECTURI  | Redirect URI - application address with /callback uri |
+
+Note that the module provides a redirect servlet with the endpoint `/callback` this is the endpoint typically used by the identity provider as the callback uri. You will find more information about how to setup your identity provider in the [Imixs Office Workflow OIDC documentation pages](https://doc.office-workflow.com/auth/oidc/keycloak.html).
 
 ### Wildfly
 
@@ -59,6 +62,11 @@ or by changing the standalone.xml file:
 ```
 
 Find also other options for Wildfly here: https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
+
+### User Profile Update
+
+When using the [Imixs-Marty library](https://github.com/imixs/imixs-marty) the module automatically
+updates the user profile with the attributes provided by the OpenID provider. The class `UserProfileHandler` is a CDI Observer bean listening to the Marty Profile event (`org.imixs.marty.profile.ProfileEvent`). A project may implement an alternative mechanism to this bean.
 
 ### Debug
 
