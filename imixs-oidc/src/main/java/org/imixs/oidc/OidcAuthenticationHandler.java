@@ -62,7 +62,7 @@ public class OidcAuthenticationHandler implements Serializable {
         StringBuilder output = new StringBuilder();
         try {
             String forwardedProto = request.getHeader("X-Forwarded-Proto");
-            output.append("\n=== OIDC Session Information ===\n")
+            output.append("\n=== Imixs-OIDC - Session Information ===\n")
                     .append("X-Forwarded-Proto: ").append(forwardedProto).append("\n");
 
             if (principal != null) {
