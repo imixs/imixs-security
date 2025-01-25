@@ -21,9 +21,9 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 
 /**
- * This class implements a OpenIdAuthenticationMechanismDefinition for
+ * The class OidcAuthenticationHandler implements a
+ * OpenIdAuthenticationMechanismDefinition for
  * Authentication against an OpenID Provider (e.g. Keycloak).
- * is an OpenID Connect Default implementation
  * 
  * See also:
  * 
@@ -40,10 +40,10 @@ import jakarta.ws.rs.core.MediaType;
         redirectURI = "${oidcConfig.redirectURI}", //
         providerURI = "${oidcConfig.issuerUri}" //
 )
-public class Securitybean implements Serializable {
+public class OidcAuthenticationHandler implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(Securitybean.class.getName());
+    private static Logger logger = Logger.getLogger(OidcAuthenticationHandler.class.getName());
 
     @Inject
     Principal principal;

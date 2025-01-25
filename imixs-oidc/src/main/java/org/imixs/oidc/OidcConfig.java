@@ -10,7 +10,7 @@ import jakarta.inject.Named;
 
 /**
  * The OidcConfig is a CDI config bean used to provide the config values for the
- * {@link Securitybean}.
+ * {@link OidcAuthenticationHandler}.
  * 
  * @author rsoika
  *

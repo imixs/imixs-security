@@ -11,6 +11,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * The CallbackServlet provides the callback URL for the identity provider. It
+ * simply sends a redirect to the origin address
+ */
 @WebServlet("/callback")
 public class CallbackServlet extends HttpServlet {
     @Inject
