@@ -37,7 +37,7 @@ import jakarta.ws.rs.core.MediaType;
 @OpenIdAuthenticationMechanismDefinition( //
         clientId = "${oidcConfig.clientId}", //
         clientSecret = "${oidcConfig.clientSecret}", //
-        redirectURI = "${baseURL}/callback", //
+        redirectURI = "${oidcConfig.redirectURI}", //
         providerURI = "${oidcConfig.issuerUri}" //
 )
 public class Securitybean implements Serializable {

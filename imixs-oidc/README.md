@@ -4,15 +4,14 @@ This project provides a generic library to setup an OpenID Connect security mech
 
 More information:
 
- - [Jakarte EE Specification details](https://jakarta.ee/specifications/security/3.0/jakarta-security-spec-3.0.html#openid-connect-annotation)
- - [Keycloak integration](https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html)
- - [Securing WildFly Apps](https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/)
-
-
+- [Jakarte EE Specification details](https://jakarta.ee/specifications/security/3.0/jakarta-security-spec-3.0.html#openid-connect-annotation)
+- [Keycloak integration](https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html)
+- [Securing WildFly Apps](https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/)
 
 ## Background
 
-Since Jakarta EE 8 a new Security API was introduced providing a new standard and portable way of handling security concerns in Java containers. This new standard allows to configure the authentication mechanism of an application directly in a CDI bean, instead through the web.xml file. So web applications can now configure authentication mechanisms by providing implementations of the new `HttpAuthenticationMechanism` interface. Beside the standard implementations for Basic, Form and CustomForm authentication Jakarta EE 10 adapted this concept to provide an authentication mechanism for OpenID Connect. We introduced this library for an easy security setup of Web Applications. The library can be added simply as a dependency to a web application project.
+Since Jakarta EE 8 a new Security API provides a standard and portable way of handling security concerns in Java containers.
+This new standard allows to configure the authentication mechanism of an application directly in a CDI bean, instead through the web.xml file. So web applications can now configure authentication mechanisms by providing implementations of the new `HttpAuthenticationMechanism` interface. Beside the standard implementations for Basic, Form and CustomForm authentication Jakarta EE 10 adapted this concept to provide an authentication mechanism for OpenID Connect. We introduced this library for an easy security setup of Web Applications. The library can be added simply as a dependency to a web application project.
 
 ## Maven Dependecy
 
@@ -33,33 +32,16 @@ The Jakarta EE 10 Runtime automatically scann this library during deployment and
 
 The OpenID Client configuration attributes can be configured via Microprofile Config using the following properties :
 
-```
-      OIDCCONFIG_ISSUERURI: "<your provider url>"
-      OIDCCONFIG_CLIENTID: "xxxxxxxxxx"
-      OIDCCONFIG_CLIENTSECRET: "xxxxxxxxxx"
-```
-
-### The ClaimsDefinition
-
-Within the OpenID standard it is not defined how Roles or Groups a user is assigned to are provided in a result token. For this reason it is necessary to declare with a so called `ClaimsDefinition` which attribute contains the groups to be resolved by the `OpenIdAuthenticationDefinition`.
-
-For example if your provider sends the user roles in an attribute named `http://www.imixs.org/roles` you can map this information to the callerGroupsClaim.
-
-```
-@OpenIdAuthenticationDefinition( //
-        providerURI = "${payara.security.openid.providerURI}", //
-        ......
-+       claimsDefinition = @ClaimsDefinition(callerGroupsClaim = "http://www.imixs.org/roles") //
-)
-```
-
-When using this library you can set the GroupsClaim with the property `payara.security.openid.callerGroupsClaim`. This param dDefines the name of callerGroups claim and maps the claim’s value to caller groups value in IdentityStore#validate.
-
-To setup Auth0 with user roles can be a little tricky but you will find a good tutorial [here](https://auth0.com/blog/jakarta-ee-oidc/).
+| Environment Param       | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| OIDCCONFIG_ISSUERURI    | endpoint for indentity provider                       |
+| OIDCCONFIG_CLIENTID     | OIDC Client ID                                        |
+| OIDCCONFIG_CLIENTSECRET | Client secret                                         |
+| OIDCCONFIG_REDIRECTURI  | Redirect URI - application address with /callback uri |
 
 ### Wildfly
 
-To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disable the integrated jaspi module. 
+To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disable the integrated jaspi module.
 
 This can be done either by the wildfly-cli command:
 
@@ -78,7 +60,41 @@ or by changing the standalone.xml file:
 
 Find also other options for Wildfly here: https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
 
-### Auth0.com
+### Debug
+
+After you have configured the library and deployed your application you can request details about the authenticated user by the Rest API endpoint /oidc:
+
+    http://localhost:8080/api/oidc
+
+This endpoint will print details about the current OpenID session into the server log. The information can be helpful to analyze tokens and Claims returned by the OpenID provider.
+
+# Development
+
+The following section contains information for developing custom implementations of a OpenIdAuthenticationMechanismDefinition
+
+To build the library form sources you can run the maven command:
+
+    $ mvn clean install
+
+## The ClaimsDefinition
+
+Within the OpenID standard it is not defined how Roles or Groups a user is assigned to are provided in a result token. For this reason it is necessary to declare with a so called `ClaimsDefinition` which attribute contains the groups to be resolved by the `OpenIdAuthenticationDefinition`.
+
+For example if your provider sends the user roles in an attribute named `http://www.imixs.org/roles` you can map this information to the callerGroupsClaim.
+
+```
+@OpenIdAuthenticationDefinition( //
+        providerURI = "${payara.security.openid.providerURI}", //
+        ......
++       claimsDefinition = @ClaimsDefinition(callerGroupsClaim = "http://www.imixs.org/roles") //
+)
+```
+
+When using this library you can set the GroupsClaim with the property `payara.security.openid.callerGroupsClaim`. This param dDefines the name of callerGroups claim and maps the claim’s value to caller groups value in IdentityStore#validate.
+
+To setup Auth0 with user roles can be a little tricky but you will find a good tutorial [here](https://auth0.com/blog/jakarta-ee-oidc/).
+
+## Auth0.com
 
 For auth0.com you need to provide an additional parameter to resolve role names configured in auth0.com
 
@@ -156,17 +172,3 @@ Protecting JSF pages or static html pages can be done as usual in the web.xml fi
 
 </glassfish-web-app>
 ```
-
-## Debug
-
-After you have configured the library and deployed your application you can request details about the authenticated user by the Rest API endpoint /oidc:
-
-    http://localhost:8080/api/oidc
-
-This endpoint will print details about the current OpenID session into the server log. The information can be helpful to analyze tokens and Claims returned by the OpenID provider.
-
-# Build from Sources
-
-To build the library form sources you can run the maven command:
-
-    $ mvn clean install

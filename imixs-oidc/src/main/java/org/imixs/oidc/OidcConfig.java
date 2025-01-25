@@ -34,8 +34,8 @@ public class OidcConfig implements Serializable {
     String clientSecret;
 
     @Inject
-    @ConfigProperty(name = "OIDCCONFIG_REDIRECTURL", defaultValue = "undefined")
-    String redirectURL;
+    @ConfigProperty(name = "OIDCCONFIG_REDIRECTURI", defaultValue = "undefined")
+    String redirectURI;
 
     public String getClientId() {
         return clientId;
@@ -49,8 +49,12 @@ public class OidcConfig implements Serializable {
         return issuerUri;
     }
 
-    public String getRedirectURL() {
-        return redirectURL;
+    public String getRedirectURI() {
+        if ("undefined".equals(redirectURI)) {
+            // create default uri
+            redirectURI = "${baseURL}/callback";
+        }
+        return redirectURI;
     }
 
 }
