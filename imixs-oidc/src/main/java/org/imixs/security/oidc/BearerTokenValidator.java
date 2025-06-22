@@ -38,14 +38,8 @@ public class BearerTokenValidator {
     public jakarta.security.enterprise.AuthenticationStatus handle(HttpServletRequest request,
             HttpMessageContext context) {
 
-        logger.info("Hier bin ich");
-        if (oidcConfig != null) {
-            logger.info("oidcConfig is OK");
-        } else {
-            logger.info("oidcConfig is NOT OK");
-        }
         String authHeader = request.getHeader("Authorization");
-        logger.info("│   ├── Authorization header: " + authHeader);
+        logger.fine("│   ├── Authorization header: " + authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length());
             logger.info("├── Bearer token validation...");

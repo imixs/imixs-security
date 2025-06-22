@@ -42,28 +42,35 @@ public class CombinedAuthenticationMechanism implements HttpAuthenticationMechan
             HttpServletResponse response,
             HttpMessageContext context) throws AuthenticationException {
 
-        String path = request.getRequestURI();
         try {
-            if (path.startsWith("/api/")) {
-                logger.info("│   ├── api request");
+
+            // Test for Bearer token
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                logger.info("│   ├── Bearer token detected");
                 return bearerTokenValidator.handle(request, context);
-            } else if (path.startsWith("/callback")) {
-                logger.info("│   ├── callback request");
-                return context.doNothing(); // lassen wir durch
-            } else {
-                // Prüfen, ob der Benutzer in der Session bereits authentifiziert wurde
-                var session = request.getSession(false);
-                if (session != null && session.getAttribute("username") != null) {
-                    String username = (String) session.getAttribute("username");
-                    @SuppressWarnings("unchecked")
-                    var roles = (java.util.List<String>) session.getAttribute("roles");
-                    logger.fine("│   ├── session user found: " + username);
-                    return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
-                }
-                logger.info("├── oidcAuth request (start new login)");
-                logger.info("│   ├── validateRequest: " + path);
-                return oidcAuthFlowHandler.handle(request, response, context);
             }
+
+            // Allow callback through without authentication
+            String path = request.getRequestURI();
+            if (path.startsWith("/callback")) {
+                logger.info("│   ├── callback request");
+                return context.doNothing();
+            }
+
+            // OIDC session-based login
+            var session = request.getSession(false);
+            if (session != null && session.getAttribute("username") != null) {
+                String username = (String) session.getAttribute("username");
+                @SuppressWarnings("unchecked")
+                var roles = (java.util.List<String>) session.getAttribute("roles");
+                logger.fine("│   ├── session user found: " + username);
+                return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
+            }
+
+            logger.info("├── initiating OIDC login flow");
+            return oidcAuthFlowHandler.handle(request, response, context);
+
         } catch (IOException e) {
             throw new AuthenticationException("Error handling authentication", e);
         }

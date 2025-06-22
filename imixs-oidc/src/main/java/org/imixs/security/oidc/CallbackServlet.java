@@ -62,7 +62,7 @@ public class CallbackServlet extends HttpServlet {
         // ID Token decodieren mit TokenValidator
         String idToken = token.id_token;
 
-        logger.info("│   ├── idToken= " + idToken);
+        logger.fine("│   ├── idToken= " + idToken);
         try {
             Map<String, RSAKey> publicKeys = oidcConfig.getJwks();
             if (!TokenValidator.isTokenValid(idToken, publicKeys)) {
@@ -123,7 +123,7 @@ public class CallbackServlet extends HttpServlet {
 
             try (JsonReader reader = Json.createReader(new StringReader(response.body()))) {
                 JsonObject json = reader.readObject();
-                logger.info("│   ├── json response= " + json);
+                logger.fine("│   ├── json response= " + json);
 
                 String accessToken = json.getString("access_token", null);
                 String idToken = json.getString("id_token", null);
@@ -132,14 +132,13 @@ public class CallbackServlet extends HttpServlet {
                 String scope = json.getString("scope", null);
                 long expiresIn = json.getJsonNumber("expires_in").longValue();
 
-                logger.info("│   │   ├── access_token= " + accessToken);
-                logger.info("│   │   ├── id_token= " + idToken);
-                logger.info("│   │   ├── refresh_token= " + refreshToken);
-                logger.info("│   │   ├── token_type= " + tokenType);
+                logger.fine("│   │   ├── access_token= " + accessToken);
+                logger.fine("│   │   ├── id_token= " + idToken);
+                logger.fine("│   │   ├── refresh_token= " + refreshToken);
+                logger.fine("│   │   ├── token_type= " + tokenType);
                 logger.info("│   │   ├── scope= " + scope);
                 logger.info("│   │   ├── expires_in= " + expiresIn);
                 TokenResponse token = new TokenResponse();
-                logger.info("│   ├── build token...");
                 token.access_token = accessToken;
                 token.id_token = idToken;
                 token.refresh_token = refreshToken;
