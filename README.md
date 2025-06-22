@@ -1,6 +1,6 @@
 # Imixs Security
 
-Imixs-Security is a side project form Imixs-Workflow providing different security solutions and libraries to be used to protect enterprise applications.
+Imixs-Security is a side project form Imixs-Workflow providing different security solutions and libraries used to protect enterprise applications.
 Most libraries are based on Jakarta EE but some of them can also be used standalone in a Java SE application. This project is licensed unter the Eclipse Public License if not mentioned otherwise. You are invited to join the project. If you have questions just open a new issue.
 
 ## OpenID Connect for Jakarta EE 10 Platform

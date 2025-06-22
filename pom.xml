@@ -11,6 +11,7 @@
 	<modules>
 		<module>imixs-jwt</module>
 		<module>imixs-oidc</module>
+		<module>imixs-oidc-marty</module>
 	</modules>
 
 	<description>
