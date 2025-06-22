@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -91,7 +92,6 @@ public class OidcConfig implements Serializable {
                 discoveryUrl += ".well-known/openid-configuration";
             }
             logger.info("├── Fetching OIDC config from: " + discoveryUrl);
-
             try (InputStream is = new URL(discoveryUrl).openStream();
                     JsonReader reader = Json.createReader(is)) {
                 return reader.readObject();
@@ -135,9 +135,11 @@ public class OidcConfig implements Serializable {
      */
     public synchronized Map<String, RSAKey> getJwks() throws Exception {
         long now = System.currentTimeMillis() / 1000;
-
+        boolean debug = logger.isLoggable(Level.FINE);
         if (cachedJwks == null || (now - lastFetchTimestamp) > JWKS_REFRESH_INTERVAL_SECONDS) {
-            logger.info("├── ⏳ JWKS cache expired or missing. Fetching from provider...");
+            if (debug) {
+                logger.info("├── ⏳ JWKS cache expired or missing. Fetching from provider...");
+            }
             cachedJwks = fetchJwksRemote();
             lastFetchTimestamp = now;
         } else {
@@ -151,9 +153,11 @@ public class OidcConfig implements Serializable {
      * Fetch JWKS directly from the provider (no cache).
      */
     private Map<String, RSAKey> fetchJwksRemote() throws Exception {
+        boolean debug = logger.isLoggable(Level.FINE);
         String jwksUri = getJwksUri();
-        logger.info("├── 📥 Fetching JWKS from: " + jwksUri);
-
+        if (debug) {
+            logger.info("├── 📥 Fetching JWKS from: " + jwksUri);
+        }
         try (InputStream is = new URL(jwksUri).openStream()) {
             JWKSet jwkSet = JWKSet.load(is);
             return jwkSet.getKeys().stream()

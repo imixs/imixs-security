@@ -10,6 +10,10 @@ import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageCont
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * This handler is responsible to redirect the user during the oidc
+ * authentication flow
+ */
 @ApplicationScoped
 public class OidcAuthFlowHandler {
 
@@ -22,7 +26,7 @@ public class OidcAuthFlowHandler {
             HttpServletResponse response,
             HttpMessageContext context) throws IOException {
         if (request.getRequestURI().contains("/callback")) {
-            // hancled by callbackServlet
+            // handled by callbackServlet
             return context.doNothing(); // close OIDC Flow
         }
 

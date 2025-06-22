@@ -14,10 +14,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 
+/**
+ * The TokenValidator is used to validate OIDC access tokens against the
+ * identity provider
+ */
 public class TokenValidator {
     private static final Logger logger = Logger.getLogger(TokenValidator.class.getName());
-
-    // private Map<String, RSAKey> publicKeys;
 
     public static JsonObject decodeJwtPayload(String jwt) throws Exception {
         String[] parts = jwt.split("\\.");
@@ -64,7 +66,7 @@ public class TokenValidator {
                 }
             }
 
-            logger.info("├── ✅ token successful verified.");
+            logger.fine("├── ✅ token successful verified.");
             return true;
 
         } catch (Exception e) {

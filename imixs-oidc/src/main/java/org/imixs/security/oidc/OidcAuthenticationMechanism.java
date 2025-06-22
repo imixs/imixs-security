@@ -2,6 +2,7 @@ package org.imixs.security.oidc;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,14 +28,17 @@ import jakarta.servlet.http.HttpServletResponse;
  * in a single security mechanism.
  */
 @ApplicationScoped
-public class CombinedAuthenticationMechanism implements HttpAuthenticationMechanism {
-    private static Logger logger = Logger.getLogger(CombinedAuthenticationMechanism.class.getName());
+public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism {
+    private static Logger logger = Logger.getLogger(OidcAuthenticationMechanism.class.getName());
 
     @Inject
     BearerTokenValidator bearerTokenValidator;
 
     @Inject
     OidcAuthFlowHandler oidcAuthFlowHandler;
+
+    @Inject
+    OidcConfig oidcConfig;
 
     @Override
     public jakarta.security.enterprise.AuthenticationStatus validateRequest(
@@ -43,18 +47,22 @@ public class CombinedAuthenticationMechanism implements HttpAuthenticationMechan
             HttpMessageContext context) throws AuthenticationException {
 
         try {
-
+            boolean debug = logger.isLoggable(Level.FINE);
             // Test for Bearer token
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                logger.info("│   ├── Bearer token detected");
+                if (debug) {
+                    logger.info("│   ├── Bearer token detected");
+                }
                 return bearerTokenValidator.handle(request, context);
             }
 
             // Allow callback through without authentication
             String path = request.getRequestURI();
             if (path.startsWith("/callback")) {
-                logger.info("│   ├── callback request");
+                if (debug) {
+                    logger.info("│   ├── callback request");
+                }
                 return context.doNothing();
             }
 
@@ -67,8 +75,9 @@ public class CombinedAuthenticationMechanism implements HttpAuthenticationMechan
                 logger.fine("│   ├── session user found: " + username);
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
             }
-
-            logger.info("├── initiating OIDC login flow");
+            if (debug) {
+                logger.info("├── initiating OIDC login flow");
+            }
             return oidcAuthFlowHandler.handle(request, response, context);
 
         } catch (IOException e) {

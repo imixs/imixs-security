@@ -3,6 +3,7 @@ package org.imixs.security.oidc;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nimbusds.jose.jwk.RSAKey;
@@ -38,11 +39,17 @@ public class BearerTokenValidator {
     public jakarta.security.enterprise.AuthenticationStatus handle(HttpServletRequest request,
             HttpMessageContext context) {
 
+        boolean debug = logger.isLoggable(Level.FINE);
+
         String authHeader = request.getHeader("Authorization");
-        logger.fine("│   ├── Authorization header: " + authHeader);
+        if (debug) {
+            logger.fine("│   ├── Authorization header: " + authHeader);
+        }
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length());
-            logger.info("├── Bearer token validation...");
+            if (debug) {
+                logger.info("├── Bearer token validation...");
+            }
             try {
                 // check signature + expires date
                 Map<String, RSAKey> publicKeys = oidcConfig.getJwks();
@@ -59,18 +66,20 @@ public class BearerTokenValidator {
                     logger.warning("│   ├── ❌ no username found in token.");
                     return context.responseUnauthorized();
                 }
-                logger.info("│   ├── username=" + username);
 
                 List<String> roles = TokenValidator.extractRoles(claims);
-                if (roles != null && !roles.isEmpty()) {
-                    logger.info("│   ├── roles=" + String.join(", ", roles));
-                } else {
-                    logger.warning("│   ├── unable to resolve roles");
-                    logger.warning("│   ├── claims=" + claims);
+                if (debug) {
+                    logger.info("│   ├── username=" + username);
+                    if (roles != null && !roles.isEmpty()) {
+                        logger.info("│   ├── roles=" + String.join(", ", roles));
+                    } else {
+                        logger.warning("│   ├── unable to resolve roles");
+                        logger.warning("│   ├── claims=" + claims);
+                    }
                 }
-
-                logger.info("├── ✅ Authorization successful ");
-
+                if (debug) {
+                    logger.info("├── ✅ Authorization successful ");
+                }
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
             } catch (Exception e) {
                 logger.warning("Invalid JWT token: " + e.getMessage());

@@ -57,6 +57,10 @@ The OpenID Client configuration attributes can be configured via Microprofile Co
 
 Note that the module provides a redirect servlet with the endpoint `/callback` this is the endpoint typically used by the identity provider as the callback uri. You will find more information about how to setup your identity provider in the [Imixs Office Workflow OIDC documentation pages](https://doc.office-workflow.com/auth/oidc/keycloak.html).
 
+### Debug Mode
+
+You can set the debug to true by setting the looger for 'org.imixs.security' at least to `FINE`. This prints more information during the login process and will help for a first setup.
+
 ### Wildfly
 
 To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disable the integrated jaspi module.

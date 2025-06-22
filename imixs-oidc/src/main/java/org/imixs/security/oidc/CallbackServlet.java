@@ -10,6 +10,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nimbusds.jose.jwk.RSAKey;
@@ -48,9 +49,11 @@ public class CallbackServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        boolean debug = logger.isLoggable(Level.FINE);
         String code = request.getParameter("code");
-        logger.info("├── callback code= " + code);
+        if (debug) {
+            logger.info("├── callback code= " + code);
+        }
         if (code == null || code.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing authorization code");
             return;
@@ -71,18 +74,18 @@ public class CallbackServlet extends HttpServlet {
             }
 
             JsonObject claims = TokenValidator.decodeJwtPayload(idToken);
-
             String username = TokenValidator.extractUsername(claims);
-            logger.info("│   ├── username=" + username);
             List<String> roles = TokenValidator.extractRoles(claims);
-            if (roles != null && !roles.isEmpty()) {
-                logger.info("│   ├── roles=" + String.join(", ", roles));
-            } else {
-                logger.warning("│   ├── unable to resolve roles");
-                logger.warning("│   ├── claims=" + claims);
+            if (debug) {
+                logger.info("│   ├── username=" + username);
+                if (roles != null && !roles.isEmpty()) {
+                    logger.info("│   ├── roles=" + String.join(", ", roles));
+                } else {
+                    logger.warning("│   ├── unable to resolve roles");
+                    logger.warning("│   ├── claims=" + claims);
+                }
+                logger.info("│   ├── access_token=" + token.access_token);
             }
-
-            logger.info("│   ├── access_token=" + token.access_token);
             // Session setzen
             request.getSession().setAttribute("username", username);
             request.getSession().setAttribute("access_token", token.access_token);
@@ -93,20 +96,24 @@ public class CallbackServlet extends HttpServlet {
 
         // Zurück zur ursprünglichen Seite
         String redirectTo = (String) request.getSession().getAttribute("originalRequest");
-        logger.info("├── ✅ completed - redirect to: " + redirectTo);
+        logger.info("├── ✅ OIDC Login successful - redirect to: " + redirectTo);
         response.sendRedirect(redirectTo != null ? redirectTo : "/index.xhtml");
     }
 
     private TokenResponse exchangeAuthorizationCode(String code) throws IOException {
+        boolean debug = logger.isLoggable(Level.FINE);
         HttpClient client = HttpClient.newHttpClient();
-        logger.info("│   ├── exchangeAuthorizationCode=" + code);
+        if (debug) {
+            logger.info("│   ├── exchangeAuthorizationCode=" + code);
+        }
         String body = "grant_type=authorization_code" +
                 "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
                 "&redirect_uri=" + URLEncoder.encode(oidcConfig.getRedirectURI(), StandardCharsets.UTF_8) +
                 "&client_id=" + URLEncoder.encode(oidcConfig.getClientId(), StandardCharsets.UTF_8) +
                 "&client_secret=" + URLEncoder.encode(oidcConfig.getClientSecret(), StandardCharsets.UTF_8);
-
-        logger.info("│   ├── tokenEndpoint=" + oidcConfig.getTokenEndpoint());
+        if (debug) {
+            logger.info("│   ├── tokenEndpoint=" + oidcConfig.getTokenEndpoint());
+        }
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(oidcConfig.getTokenEndpoint()))
                 .header("Content-Type", "application/x-www-form-urlencoded")
@@ -116,14 +123,16 @@ public class CallbackServlet extends HttpServlet {
         HttpResponse<String> response;
         try {
             response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            logger.info("│   ├── response statusCode=" + response.statusCode());
+            if (debug) {
+                logger.info("│   ├── response statusCode=" + response.statusCode());
+            }
             if (response.statusCode() != 200) {
                 throw new IOException("Token exchange failed: " + response.body());
             }
 
             try (JsonReader reader = Json.createReader(new StringReader(response.body()))) {
                 JsonObject json = reader.readObject();
-                logger.fine("│   ├── json response= " + json);
+                logger.finest("│   ├── json response= " + json);
 
                 String accessToken = json.getString("access_token", null);
                 String idToken = json.getString("id_token", null);
@@ -131,13 +140,14 @@ public class CallbackServlet extends HttpServlet {
                 String tokenType = json.getString("token_type", null);
                 String scope = json.getString("scope", null);
                 long expiresIn = json.getJsonNumber("expires_in").longValue();
-
-                logger.fine("│   │   ├── access_token= " + accessToken);
-                logger.fine("│   │   ├── id_token= " + idToken);
-                logger.fine("│   │   ├── refresh_token= " + refreshToken);
-                logger.fine("│   │   ├── token_type= " + tokenType);
-                logger.info("│   │   ├── scope= " + scope);
-                logger.info("│   │   ├── expires_in= " + expiresIn);
+                if (debug) {
+                    logger.finest("│   │   ├── access_token= " + accessToken);
+                    logger.finest("│   │   ├── id_token= " + idToken);
+                    logger.finest("│   │   ├── refresh_token= " + refreshToken);
+                    logger.finest("│   │   ├── token_type= " + tokenType);
+                    logger.info("│   │   ├── scope= " + scope);
+                    logger.info("│   │   ├── expires_in= " + expiresIn);
+                }
                 TokenResponse token = new TokenResponse();
                 token.access_token = accessToken;
                 token.id_token = idToken;
