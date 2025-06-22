@@ -1,6 +1,21 @@
 # OpenID Connect for Jakarta EE 10
 
-This project provides a generic library to setup an OpenID Connect security mechanism for web applications running on Jakarta EE 10. Jakarta EE 10 provides a security API to support OpenID Connect. This implementation was also inspired by [Andrew Hughes blogpost about Jakarta EE and OIDC](https://auth0.com/blog/jakarta-ee-oidc/).
+This project provides a lightweight and extensible solution for integrating OpenID Connect (OIDC) authentication and Bearer token validation into a standard Jakarta EE application.
+
+The library supports:
+
+- ✅ OIDC login flow via standard OpenID Connect providers (e.g., Keycloak, Auth0, etc.)
+- ✅ Bearer token validation for securing REST APIs
+- ✅ JWT signature verification and expiration checks using Nimbus JOSE + JWT
+- ✅ Token decoding and claim extraction via jakarta.json (no Jackson or extra dependencies)
+- ✅ Clean separation of concerns (POJO-based, no framework lock-in)
+
+**🔒 Security Highlights**
+
+- Fetches and caches public keys from the OIDC provider's JWKS endpoint
+- Verifies RSA signatures (RS256) with kid header resolution
+- Validates exp claim to ensure token freshness
+- Extracts username and roles from standard OIDC claims
 
 More information:
 

@@ -12,6 +12,20 @@ import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageCont
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * CombinedAuthenticationMechanism provides a custom Jakarta Security
+ * AuthenticationMechanism that supports both OpenID Connect (OIDC) login and
+ * Bearer token authentication.
+ *
+ * This mechanism checks for an existing session-based OIDC login, or a Bearer
+ * token in the Authorization header of an incoming request.
+ * 
+ * It delegates token validation to the BearerTokenValidator and integrates with
+ * Jakarta Security APIs to register authenticated identity and roles.
+ * 
+ * This hybrid approach allows supporting browser-based logins and API clients
+ * in a single security mechanism.
+ */
 @ApplicationScoped
 public class CombinedAuthenticationMechanism implements HttpAuthenticationMechanism {
     private static Logger logger = Logger.getLogger(CombinedAuthenticationMechanism.class.getName());
@@ -29,7 +43,6 @@ public class CombinedAuthenticationMechanism implements HttpAuthenticationMechan
             HttpMessageContext context) throws AuthenticationException {
 
         String path = request.getRequestURI();
-
         try {
             if (path.startsWith("/api/")) {
                 logger.info("│   ├── api request");

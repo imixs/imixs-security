@@ -3,9 +3,15 @@ package org.imixs.security.oidc;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -29,6 +35,8 @@ public class OidcConfig implements Serializable {
     private static final long serialVersionUID = 7027147503119012594L;
     private static final Logger logger = Logger.getLogger(OidcConfig.class.getName());
 
+    private static final long JWKS_REFRESH_INTERVAL_SECONDS = 600; // 10 minutes
+
     @Inject
     @ConfigProperty(name = "OIDCCONFIG_PROVIDERURI", defaultValue = "http://localhost/")
     String providerURI;
@@ -46,6 +54,9 @@ public class OidcConfig implements Serializable {
     String redirectURI;
 
     private JsonObject config;
+
+    private Map<String, RSAKey> cachedJwks;
+    private long lastFetchTimestamp = 0;
 
     @PostConstruct
     public void init() {
@@ -70,7 +81,6 @@ public class OidcConfig implements Serializable {
 
     private JsonObject fetchConfig(String issuerUri) {
         try {
-
             String discoveryUrl = issuerUri;
 
             // complete discoveryURL...
@@ -80,7 +90,6 @@ public class OidcConfig implements Serializable {
                 }
                 discoveryUrl += ".well-known/openid-configuration";
             }
-
             logger.info("├── Fetching OIDC config from: " + discoveryUrl);
 
             try (InputStream is = new URL(discoveryUrl).openStream();
@@ -121,4 +130,36 @@ public class OidcConfig implements Serializable {
         return providerURI;
     }
 
+    /**
+     * Returns cached JWKS, refreshing from remote if stale or missing.
+     */
+    public synchronized Map<String, RSAKey> getJwks() throws Exception {
+        long now = System.currentTimeMillis() / 1000;
+
+        if (cachedJwks == null || (now - lastFetchTimestamp) > JWKS_REFRESH_INTERVAL_SECONDS) {
+            logger.info("├── ⏳ JWKS cache expired or missing. Fetching from provider...");
+            cachedJwks = fetchJwksRemote();
+            lastFetchTimestamp = now;
+        } else {
+            logger.fine("├── ✅ Using cached JWKS.");
+        }
+
+        return cachedJwks;
+    }
+
+    /**
+     * Fetch JWKS directly from the provider (no cache).
+     */
+    private Map<String, RSAKey> fetchJwksRemote() throws Exception {
+        String jwksUri = getJwksUri();
+        logger.info("├── 📥 Fetching JWKS from: " + jwksUri);
+
+        try (InputStream is = new URL(jwksUri).openStream()) {
+            JWKSet jwkSet = JWKSet.load(is);
+            return jwkSet.getKeys().stream()
+                    .filter(k -> k instanceof RSAKey)
+                    .map(k -> (RSAKey) k)
+                    .collect(Collectors.toMap(JWK::getKeyID, k -> k));
+        }
+    }
 }

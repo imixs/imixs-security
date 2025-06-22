@@ -1,5 +1,8 @@
 package org.imixs.security.oidc;
 
+/**
+ * This is a json wrapper class used internal for token validation
+ */
 public class TokenResponse {
     public String access_token;
     public String id_token;

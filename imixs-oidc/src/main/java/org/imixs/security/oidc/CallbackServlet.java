@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jose.jwk.RSAKey;
 
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -24,6 +24,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * The CallbackServlet provides the servlet endpoint for handling the OpenID
+ * Connect (OIDC) authorization code callback.
+ *
+ * This servlet is triggered after a successful login at the identity provider
+ * (IdP).
+ * It exchanges the authorization code for an access token and stores the token
+ * (and optionally user info) in the HTTP session.
+ * 
+ * This is a core part of the OIDC Authorization Code Flow.
+ */
 @WebServlet("/callback")
 public class CallbackServlet extends HttpServlet {
     private static Logger logger = Logger.getLogger(CallbackServlet.class.getName());
@@ -31,11 +42,8 @@ public class CallbackServlet extends HttpServlet {
     @Inject
     OidcConfig oidcConfig;
 
-    // private final String clientId = "imixs";
-    // private final String clientSecret = "hb3ZFc7uCtNm285ifcdedgK0l29Ur7Sh";
-    // private final String redirectUri = "https://localhost:8181/callback";
-    // private final String tokenEndpoint =
-    // "http://keycloak.imixs.local:8084/realms/imixs-office-workflow/protocol/openid-connect/token";
+    @Inject
+    TokenValidator tokenValidator;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -51,31 +59,27 @@ public class CallbackServlet extends HttpServlet {
         // Token-Austausch
         TokenResponse token = exchangeAuthorizationCode(code);
 
-        // ID Token decodieren (nur Demo – verwende eine JWT-Lib wie Nimbus)
+        // ID Token decodieren mit TokenValidator
         String idToken = token.id_token;
+
         logger.info("│   ├── idToken= " + idToken);
-        JWTClaimsSet claims;
         try {
-            claims = JwtUtils.validateToken(idToken);
+            Map<String, RSAKey> publicKeys = oidcConfig.getJwks();
+            if (!TokenValidator.isTokenValid(idToken, publicKeys)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid ID token");
+                return;
+            }
 
-            String username = claims.getStringClaim("preferred_username");
+            JsonObject claims = TokenValidator.decodeJwtPayload(idToken);
+
+            String username = TokenValidator.extractUsername(claims);
             logger.info("│   ├── username=" + username);
-
-            // try to resolve user roles....
-            List<String> roles = null;
-            if (claims.getStringListClaim("roles") != null) {
-                roles = claims.getStringListClaim("roles");
-            } else if (claims.getStringListClaim("groups") != null) {
-                roles = claims.getStringListClaim("groups");
-            } else if (claims.getClaim("realm_access") != null) {
-                Map<String, Object> realmAccess = (Map<String, Object>) claims.getClaim("realm_access");
-                roles = (List<String>) realmAccess.get("roles");
+            List<String> roles = TokenValidator.extractRoles(claims);
+            if (roles != null && !roles.isEmpty()) {
+                logger.info("│   ├── roles=" + String.join(", ", roles));
             } else {
                 logger.warning("│   ├── unable to resolve roles");
                 logger.warning("│   ├── claims=" + claims);
-            }
-            if (roles != null) {
-                logger.info("│   ├── roles=" + String.join(", ", roles));
             }
 
             logger.info("│   ├── access_token=" + token.access_token);
@@ -84,9 +88,9 @@ public class CallbackServlet extends HttpServlet {
             request.getSession().setAttribute("access_token", token.access_token);
             request.getSession().setAttribute("roles", roles);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
         // Zurück zur ursprünglichen Seite
         String redirectTo = (String) request.getSession().getAttribute("originalRequest");
         logger.info("├── ✅ completed - redirect to: " + redirectTo);
@@ -145,7 +149,6 @@ public class CallbackServlet extends HttpServlet {
                 return token;
             }
         } catch (IOException | InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }
