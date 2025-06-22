@@ -27,10 +27,11 @@ More information:
 ## Background
 
 Since Jakarta EE 8 a new Security API provides a standard and portable way of handling security concerns in Java containers.
-This new standard allows to configure the authentication mechanism of an application directly in a CDI bean, instead through the web.xml file. So web applications can now configure authentication mechanisms by providing implementations of the new `HttpAuthenticationMechanism` interface. Beside the standard implementations for Basic, Form and CustomForm authentication Jakarta EE 10 adapted this concept to provide an authentication mechanism for OpenID Connect. We introduced this library for an easy security setup of Web Applications. The library can be added simply as a dependency to a web application project.
+This new standard allows to configure the authentication mechanism of an application directly in a CDI bean, instead through the web.xml file. So web applications can now configure authentication mechanisms by providing implementations of the new `HttpAuthenticationMechanism` interface. Beside the standard implementations for Basic, Form and CustomForm authentication Jakarta EE 10 adapted this concept to provide an authentication mechanism for OpenID Connect. We introduced this library for an easy security setup of Web Applications.
 
 ## Maven Dependecy
 
+The library can be added simply as a dependency to a web application project.
 To use this library your application needs to be deployed into Jakarta EE 10 Application. You simply need to add the following maven dependencies to your pom.xml:
 
 ```xml
@@ -38,7 +39,7 @@ To use this library your application needs to be deployed into Jakarta EE 10 App
     <dependency>
         <groupId>org.imixs.security</groupId>
         <artifactId>imixs-oidc</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </dependency>
 ```
 
@@ -59,7 +60,73 @@ Note that the module provides a redirect servlet with the endpoint `/callback` t
 
 ### Debug Mode
 
-You can set the debug to true by setting the looger for 'org.imixs.security' at least to `FINE`. This prints more information during the login process and will help for a first setup.
+You can set the debug to true by setting the logger for 'org.imixs.security' at least to `FINE`. This prints more information during the login process and will help for a first setup.
+
+**The Rest API Debug Endpoint**
+
+The library also adds a rest API endpoint to provide OIDC debug information by the Rest API endpoint /oidc-debug:
+
+    http://localhost:8080/api/oidc-debug
+
+This endpoint will print details about the current OpenID session into the server log. The information can be helpful to analyze tokens and Claims returned by the OpenID provider.
+
+```
+
+=== Imixs-OIDC - Debug Information ===
+Principal: anna
+
+OIDC Claim:
+===============================
+{"exp":1750630586,
+    "iat":1750630286,
+    "auth_time":1750629115,
+    "jti":"a2e213a2-aaaaaaaa-287e85280f2b",
+    "iss":"http://keycloak.local:8084/realms/my-realm",
+    "aud":"imixs",
+    "sub":"c8d6a4b9-zzzzzzzzz-d6a19884d3a7",
+    "typ":"ID",
+    "azp":"imixs",
+    "session_state":"974aaaf9-yyyyyyyyyyyy-624ed29de629",
+    "at_hash":"hoE-ubXZ_34561tEHA0LOQ",
+    "acr":"0",
+    "sid":"974aaaf9-xxxxxxxx-624ed29de629",
+    "email_verified":true,
+    "name":"Anna M.",
+    "groups":["default-roles-my-realm",
+    "offline_access",
+    "org.imixs.ACCESSLEVEL.AUTHORACCESS",
+    "uma_authorization"],
+    "preferred_username":"anna",
+    "given_name":"Anna",
+    "family_name":"M.",
+    "email":"anna@foo.com"}
+===============================
+```
+
+## The OidcContext
+
+Imixs-Oidc provides a request scoped Bean holding OIDC context information. This bean can be used to resolve username, email or other parts from the OIDC claim.
+
+See the following code example:
+
+```java
+    @Inject
+    private OidcContext context;
+
+    ....
+    String userName = "" + context.getUsername();
+    String email = "" + context.getEmail();
+
+    // fetch a JsonObject object containing all claim information
+    JsonObject claims = context.getClaims();
+    // resolve roles
+    List<STring> roles = claims.getJsonArray("groups").getValuesAs(v -> v.toString().replace("\"", ""));
+
+```
+
+## Integration
+
+The following section contains information about integration into different server platforms.
 
 ### Wildfly
 
@@ -81,19 +148,6 @@ or by changing the standalone.xml file:
 ```
 
 Find also other options for Wildfly here: https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
-
-### User Profile Update
-
-When using the [Imixs-Marty library](https://github.com/imixs/imixs-marty) the module automatically
-updates the user profile with the attributes provided by the OpenID provider. The class `UserProfileHandler` is a CDI Observer bean listening to the Marty Profile event (`org.imixs.marty.profile.ProfileEvent`). A project may implement an alternative mechanism to this bean.
-
-### Debug
-
-After you have configured the library and deployed your application you can request details about the authenticated user by the Rest API endpoint /oidc:
-
-    http://localhost:8080/api/oidc
-
-This endpoint will print details about the current OpenID session into the server log. The information can be helpful to analyze tokens and Claims returned by the OpenID provider.
 
 # Development
 
