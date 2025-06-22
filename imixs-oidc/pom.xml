@@ -2,7 +2,7 @@
 	<parent>
 		<artifactId>imixs-security</artifactId>
 		<groupId>org.imixs.security</groupId>
-		<version>2.0.1</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>imixs-oidc</artifactId>
@@ -39,7 +39,7 @@
 		<connection>scm:git:git@github.com:imixs/imixs-security.git</connection>
 		<developerConnection>scm:git:git@github.com:imixs/imixs-security.git</developerConnection>
 		<url>https://github.com/imixs/imixs-security/</url>
-		<tag>imixs-security-2.0.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
