@@ -90,6 +90,7 @@ public class CallbackServlet extends HttpServlet {
             request.getSession().setAttribute("username", username);
             request.getSession().setAttribute("access_token", token.access_token);
             request.getSession().setAttribute("roles", roles);
+            request.getSession().setAttribute("claims", claims);
         } catch (Exception e) {
             e.printStackTrace();
         }

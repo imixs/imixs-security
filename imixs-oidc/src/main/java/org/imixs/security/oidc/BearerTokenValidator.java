@@ -34,6 +34,9 @@ public class BearerTokenValidator {
     OidcConfig oidcConfig;
 
     @Inject
+    OidcContext oidcContext;
+
+    @Inject
     TokenValidator tokenValidator;
 
     public jakarta.security.enterprise.AuthenticationStatus handle(HttpServletRequest request,
@@ -80,6 +83,10 @@ public class BearerTokenValidator {
                 if (debug) {
                     logger.info("├── ✅ Authorization successful ");
                 }
+
+                // Provide requestScoped claim context
+                oidcContext.initialize(claims);
+
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
             } catch (Exception e) {
                 logger.warning("Invalid JWT token: " + e.getMessage());

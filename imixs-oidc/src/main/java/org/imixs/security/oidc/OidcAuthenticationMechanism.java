@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import jakarta.security.enterprise.AuthenticationException;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
@@ -39,6 +40,9 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
 
     @Inject
     OidcConfig oidcConfig;
+
+    @Inject
+    OidcContext oidcContext;
 
     @Override
     public jakarta.security.enterprise.AuthenticationStatus validateRequest(
@@ -73,6 +77,9 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
                 @SuppressWarnings("unchecked")
                 var roles = (java.util.List<String>) session.getAttribute("roles");
                 logger.fine("│   ├── session user found: " + username);
+
+                // Provide requestScoped claim context
+                oidcContext.initialize((JsonObject) session.getAttribute("claims"));
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
             }
             if (debug) {
