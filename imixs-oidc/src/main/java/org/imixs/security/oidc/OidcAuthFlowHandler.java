@@ -9,6 +9,7 @@ import jakarta.inject.Inject;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This handler is responsible to redirect the user during the oidc
@@ -27,6 +28,15 @@ public class OidcAuthFlowHandler {
             // handled by callbackServlet
             return context.doNothing(); // close OIDC Flow
         }
+
+        // store original request path
+        String originalRequest = request.getRequestURI();
+        String query = request.getQueryString();
+        if (query != null && !query.isEmpty()) {
+            originalRequest += "?" + query;
+        }
+        HttpSession session = request.getSession(true);
+        session.setAttribute("originalRequest", originalRequest);
 
         // start redirect
         String providerAuthEndpoint = oidcConfig.getAuthorizationEndpoint();

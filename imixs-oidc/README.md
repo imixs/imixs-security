@@ -63,6 +63,11 @@ The OpenID Client configuration attributes can be configured via Microprofile Co
 
 Note that the module provides a redirect servlet with the endpoint `/callback` this is the endpoint typically used by the identity provider as the callback uri. You will find more information about how to setup your identity provider in the [Imixs Office Workflow OIDC documentation pages](https://doc.office-workflow.com/auth/oidc/keycloak.html).
 
+### The Claims Username
+
+The username (userid) is extracted form the OIDC access token. You can specify the claim attribute to resolve the username by the environment parameter `OIDCCONFIG_CLAIM_CALLERNAME`.
+If not specified, Imixs-OIDC automatically resolves the user name to the options `preferred_username`, `sub` or `name` in this order.
+
 ### The Claims Role Path
 
 The OpenID Connect Standard (OIDC) specifies the process of authentication and the format of ID tokens, but it does not impose binding requirements on how roles or groups must be included in the token. These are application-specific or provider-specific extensions that are handled differently by services such as Keycloak, Auth0, Azure AD, or Okta.

@@ -91,14 +91,20 @@ public class CallbackServlet extends HttpServlet {
             request.getSession().setAttribute("access_token", token.access_token);
             request.getSession().setAttribute("roles", roles);
             request.getSession().setAttribute("claims", claims);
+            logger.info("├── ✅ OIDC Login successful ");
+            // Zurück zur ursprünglichen Seite
+            String redirectTo = (String) request.getSession().getAttribute("originalRequest");
+            request.getSession().removeAttribute("originalRequest");
+            if (redirectTo != null && !redirectTo.isEmpty()) {
+                logger.info("├── ☑️ redirect to: " + redirectTo);
+            }
+            response.sendRedirect(redirectTo != null ? redirectTo : "/index.xhtml");
+
         } catch (Exception e) {
+            logger.severe("├── ❌ OIDC Login error: " + e.getMessage());
             e.printStackTrace();
         }
 
-        // Zurück zur ursprünglichen Seite
-        String redirectTo = (String) request.getSession().getAttribute("originalRequest");
-        logger.info("├── ✅ OIDC Login successful - redirect to: " + redirectTo);
-        response.sendRedirect(redirectTo != null ? redirectTo : "/index.xhtml");
     }
 
     private TokenResponse exchangeAuthorizationCode(String code) throws IOException {
