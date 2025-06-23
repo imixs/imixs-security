@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +17,8 @@ import jakarta.servlet.http.HttpSession;
  * This handler is responsible to redirect the user during the oidc
  * authentication flow
  */
-@ApplicationScoped
+// @ApplicationScoped
+@RequestScoped
 public class OidcAuthFlowHandler {
     private static Logger logger = Logger.getLogger(OidcAuthFlowHandler.class.getName());
 
@@ -40,8 +41,11 @@ public class OidcAuthFlowHandler {
         if (query != null && !query.isEmpty()) {
             originalRequest += "?" + query;
         }
+
         HttpSession session = request.getSession(true);
-        session.setAttribute("originalRequest", originalRequest);
+        synchronized (session) {
+            session.setAttribute("originalRequest", originalRequest);
+        }
 
         // start redirect
         String providerAuthEndpoint = oidcConfig.getAuthorizationEndpoint();

@@ -52,6 +52,7 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
 
         try {
             boolean debug = logger.isLoggable(Level.FINE);
+
             // Test for Bearer token
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -82,6 +83,12 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
                 oidcContext.initialize((JsonObject) session.getAttribute("claims"));
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
             }
+
+            // skip authentication for unprotected resources
+            if (!context.isProtected()) {
+                return context.doNothing();
+            }
+
             if (debug) {
                 logger.info("├── 🪲 initiating OIDC login flow");
             }

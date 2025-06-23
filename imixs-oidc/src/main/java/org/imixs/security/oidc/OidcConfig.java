@@ -177,8 +177,19 @@ public class OidcConfig implements Serializable {
             if (debug) {
                 logger.info("├── ⏳ JWKS cache expired or missing. Fetching from provider...");
             }
-            cachedJwks = fetchJwksRemote();
-            lastFetchTimestamp = now;
+            try {
+                Map<String, RSAKey> newJwks = fetchJwksRemote();
+                // update cache
+                cachedJwks = newJwks;
+                lastFetchTimestamp = now;
+            } catch (Exception e) {
+                // on error, discard cache
+                if (cachedJwks != null) {
+                    logger.warning("JWKS refresh failed, using cached version: " + e.getMessage());
+                    return cachedJwks;
+                }
+                throw e; // throw only if no cache is available
+            }
         } else {
             logger.fine("├── ✅ Using cached JWKS.");
         }

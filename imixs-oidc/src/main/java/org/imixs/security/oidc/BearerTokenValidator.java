@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import com.nimbusds.jose.jwk.RSAKey;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
@@ -25,7 +25,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * It also allows extracting standard claims like username and roles from the
  * token.
  */
-@ApplicationScoped
+// @ApplicationScoped
+@RequestScoped
 public class BearerTokenValidator {
 
     private static final Logger logger = Logger.getLogger(BearerTokenValidator.class.getName());

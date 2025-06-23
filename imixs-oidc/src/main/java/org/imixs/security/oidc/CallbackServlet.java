@@ -24,6 +24,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * The CallbackServlet provides the servlet endpoint for handling the OpenID
@@ -42,9 +43,6 @@ public class CallbackServlet extends HttpServlet {
 
     @Inject
     OidcConfig oidcConfig;
-
-    @Inject
-    TokenValidator tokenValidator;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -94,9 +92,12 @@ public class CallbackServlet extends HttpServlet {
             request.getSession().setAttribute("roles", roles);
             request.getSession().setAttribute("claims", claims);
             logger.info("├── ✅ OIDC Login successful ");
-            // Zurück zur ursprünglichen Seite
-            String redirectTo = (String) request.getSession().getAttribute("originalRequest");
-            request.getSession().removeAttribute("originalRequest");
+            // redirect to origin page
+            HttpSession session = request.getSession();
+            String redirectTo = (String) session.getAttribute("originalRequest");
+            if (redirectTo != null) {
+                session.removeAttribute("originalRequest");
+            }
             if (redirectTo != null && !redirectTo.isEmpty()) {
                 logger.info("├── ☑️ redirect to: " + redirectTo);
             }
@@ -141,14 +142,15 @@ public class CallbackServlet extends HttpServlet {
 
             try (JsonReader reader = Json.createReader(new StringReader(response.body()))) {
                 JsonObject json = reader.readObject();
-                logger.finest("│   ├── json response= " + json);
-
+                logger.fine("│   ├── json response= " + json);
                 String accessToken = json.getString("access_token", null);
                 String idToken = json.getString("id_token", null);
                 String refreshToken = json.getString("refresh_token", null);
                 String tokenType = json.getString("token_type", null);
                 String scope = json.getString("scope", null);
-                long expiresIn = json.getJsonNumber("expires_in").longValue();
+                long expiresIn = json.getJsonNumber("expires_in") != null ? //
+                        json.getJsonNumber("expires_in").longValue() : 0L; // Default: 0
+
                 if (debug) {
                     logger.finest("│   │   ├── access_token= " + accessToken);
                     logger.finest("│   │   ├── id_token= " + idToken);
