@@ -20,8 +20,6 @@ public class OidcAuthFlowHandler {
     @Inject
     OidcConfig oidcConfig;
 
-    private final String scope = "openid profile email";
-
     public jakarta.security.enterprise.AuthenticationStatus handle(HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext context) throws IOException {
@@ -35,7 +33,7 @@ public class OidcAuthFlowHandler {
         String loginUrl = providerAuthEndpoint + "?response_type=code"
                 + "&client_id=" + URLEncoder.encode(oidcConfig.getClientId(), StandardCharsets.UTF_8)
                 + "&redirect_uri=" + URLEncoder.encode(oidcConfig.getRedirectURI(), StandardCharsets.UTF_8)
-                + "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8);
+                + "&scope=" + URLEncoder.encode(oidcConfig.getScope(), StandardCharsets.UTF_8);
 
         response.sendRedirect(loginUrl);
         return jakarta.security.enterprise.AuthenticationStatus.SEND_CONTINUE;

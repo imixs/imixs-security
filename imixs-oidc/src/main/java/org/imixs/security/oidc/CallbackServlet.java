@@ -75,7 +75,7 @@ public class CallbackServlet extends HttpServlet {
 
             JsonObject claims = TokenValidator.decodeJwtPayload(idToken);
             String username = TokenValidator.extractUsername(claims);
-            List<String> roles = TokenValidator.extractRoles(claims);
+            List<String> roles = TokenValidator.extractRoles(claims, oidcConfig.getClaimRolePath());
             if (debug) {
                 logger.info("│   ├── username=" + username);
                 if (roles != null && !roles.isEmpty()) {

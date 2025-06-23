@@ -11,8 +11,10 @@ import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 
 /**
  * The TokenValidator is used to validate OIDC access tokens against the
@@ -84,18 +86,45 @@ public class TokenValidator {
         return null;
     }
 
-    public static List<String> extractRoles(JsonObject claims) {
-        if (claims.containsKey("roles")) {
-            return claims.getJsonArray("roles").getValuesAs(v -> v.toString().replace("\"", ""));
-        } else if (claims.containsKey("groups")) {
-            return claims.getJsonArray("groups").getValuesAs(v -> v.toString().replace("\"", ""));
-        } else if (claims.containsKey("realm_access")) {
-            JsonObject realmAccess = claims.getJsonObject("realm_access");
-            if (realmAccess != null && realmAccess.containsKey("roles")) {
-                return realmAccess.getJsonArray("roles").getValuesAs(v -> v.toString().replace("\"", ""));
+    /**
+     * This method extracts the roles form a given json path. If no path is
+     * provided, the method automatically tries to extract the roles based on
+     * default locations within the claims.
+     * 
+     * @param claims
+     * @param claimPath
+     * @return
+     */
+    public static List<String> extractRoles(JsonObject claims, String claimPath) {
+        if (claimPath == null || claimPath.isBlank()) {
+            // no claimpath provided - try default values...
+            if (claims.containsKey("roles")) {
+                return claims.getJsonArray("roles").getValuesAs(v -> v.toString().replace("\"", ""));
+            } else if (claims.containsKey("groups")) {
+                return claims.getJsonArray("groups").getValuesAs(v -> v.toString().replace("\"", ""));
+            } else if (claims.containsKey("realm_access")) {
+                JsonObject realmAccess = claims.getJsonObject("realm_access");
+                if (realmAccess != null && realmAccess.containsKey("roles")) {
+                    return realmAccess.getJsonArray("roles").getValuesAs(v -> v.toString().replace("\"", ""));
+                }
+            }
+            return List.of();
+        }
+        String[] path = claimPath.split("\\.");
+        JsonValue current = claims;
+
+        for (int i = 0; i < path.length; i++) {
+            if (current instanceof JsonObject obj && obj.containsKey(path[i])) {
+                current = obj.get(path[i]);
+            } else {
+                return List.of(); // path not found
             }
         }
+
+        if (current instanceof JsonArray array) {
+            return array.getValuesAs(v -> v.toString().replace("\"", ""));
+        }
+
         return List.of();
     }
-
 }

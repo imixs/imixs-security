@@ -70,7 +70,7 @@ public class BearerTokenValidator {
                     return context.responseUnauthorized();
                 }
 
-                List<String> roles = TokenValidator.extractRoles(claims);
+                List<String> roles = TokenValidator.extractRoles(claims, oidcConfig.getClaimRolePath());
                 if (debug) {
                     logger.info("│   ├── username=" + username);
                     if (roles != null && !roles.isEmpty()) {

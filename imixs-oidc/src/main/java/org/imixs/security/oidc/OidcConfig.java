@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -54,6 +55,14 @@ public class OidcConfig implements Serializable {
     @ConfigProperty(name = "OIDCCONFIG_REDIRECTURI", defaultValue = "undefined")
     String redirectURI;
 
+    @Inject
+    @ConfigProperty(name = "OIDCCONFIG_SCOPE", defaultValue = "openid profile email")
+    String scope;
+
+    @Inject
+    @ConfigProperty(name = "OIDCCONFIG_ROLES")
+    Optional<String> claimRolePath;
+
     private JsonObject config;
 
     private Map<String, RSAKey> cachedJwks;
@@ -78,6 +87,17 @@ public class OidcConfig implements Serializable {
 
     public String getRedirectURI() {
         return redirectURI;
+    }
+
+    public String getClaimRolePath() {
+        if (claimRolePath.isPresent()) {
+            return claimRolePath.get();
+        }
+        return null; // not defined
+    }
+
+    public String getScope() {
+        return scope;
     }
 
     private JsonObject fetchConfig(String issuerUri) {
