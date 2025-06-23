@@ -107,8 +107,14 @@ public class OidcConfig implements Serializable {
         return null; // not defined
     }
 
+    /**
+     * Returns the scopes separated by spaces. If the scope variabel contains ','
+     * these characters will be removed automatically
+     * 
+     * @return
+     */
     public String getScope() {
-        return scope;
+        return scope.replace(",", "");
     }
 
     private JsonObject fetchConfig(String issuerUri) {

@@ -51,15 +51,15 @@ The Jakarta EE 10 Runtime automatically scann this library during deployment and
 
 The OpenID Client configuration attributes can be configured via Microprofile Config using the following properties :
 
-| Environment Param           | Description                                           |
-| --------------------------- | ----------------------------------------------------- |
-| OIDCCONFIG_ISSUERURI        | endpoint for identity provider                        |
-| OIDCCONFIG_CLIENTID         | OIDC Client ID                                        |
-| OIDCCONFIG_CLIENTSECRET     | Client secret                                         |
-| OIDCCONFIG_REDIRECTURI      | Redirect URI - application address with /callback uri |
-| OIDCCONFIG_SCOPE            | optional scope - defaults to "openid profile email"   |
-| OIDCCONFIG_CLAIM_CALLERNAME | optional caller name from the claim                   |
-| OIDCCONFIG_CLAIM_ROLES      | optional roles path within the claim                  |
+| Environment Param           | Description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| OIDCCONFIG_ISSUERURI        | endpoint for identity provider                                           |
+| OIDCCONFIG_CLIENTID         | OIDC Client ID                                                           |
+| OIDCCONFIG_CLIENTSECRET     | Client secret                                                            |
+| OIDCCONFIG_REDIRECTURI      | Redirect URI - application address with /callback uri                    |
+| OIDCCONFIG_SCOPE            | optional scopes separated by spaces - defaults to "openid profile email" |
+| OIDCCONFIG_CLAIM_CALLERNAME | optional caller name from the claim                                      |
+| OIDCCONFIG_CLAIM_ROLES      | optional roles path within the claim                                     |
 
 Note that the module provides a redirect servlet with the endpoint `/callback` this is the endpoint typically used by the identity provider as the callback uri. You will find more information about how to setup your identity provider in the [Imixs Office Workflow OIDC documentation pages](https://doc.office-workflow.com/auth/oidc/keycloak.html).
 

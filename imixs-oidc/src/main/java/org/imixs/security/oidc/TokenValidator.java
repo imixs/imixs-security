@@ -111,33 +111,63 @@ public class TokenValidator {
     public static List<String> extractRoles(JsonObject claims, String claimPath) {
         if (claimPath == null || claimPath.isBlank()) {
             // no claimpath provided - try default values...
-            if (claims.containsKey("roles")) {
-                return claims.getJsonArray("roles").getValuesAs(v -> v.toString().replace("\"", ""));
-            } else if (claims.containsKey("groups")) {
-                return claims.getJsonArray("groups").getValuesAs(v -> v.toString().replace("\"", ""));
-            } else if (claims.containsKey("realm_access")) {
-                JsonObject realmAccess = claims.getJsonObject("realm_access");
-                if (realmAccess != null && realmAccess.containsKey("roles")) {
-                    return realmAccess.getJsonArray("roles").getValuesAs(v -> v.toString().replace("\"", ""));
+            List<String> result = extractFromPath(claims, "roles");
+            if (!result.isEmpty())
+                return result;
+
+            result = extractFromPath(claims, "groups");
+            if (!result.isEmpty())
+                return result;
+
+            result = extractFromPath(claims, "realm_access.roles");
+            return result;
+        }
+
+        return extractFromPath(claims, claimPath);
+    }
+
+    /**
+     * Helper method to extract child fields
+     * 
+     * @param claims
+     * @param path
+     * @return
+     */
+    private static List<String> extractFromPath(JsonObject claims, String path) {
+        // Handle path with dots (e.g. "groups.roles", "realm_access.roles")
+        if (path.contains(".")) {
+            String[] pathParts = path.split("\\.");
+            JsonValue current = claims;
+
+            // Navigate through the path
+            for (String part : pathParts) {
+                if (current instanceof JsonObject obj && obj.containsKey(part)) {
+                    current = obj.get(part);
+                } else {
+                    return List.of(); // path not found
                 }
+            }
+
+            return extractArrayAsStringList(current);
+        } else {
+            // Simple field name (e.g. "groups", "roles")
+            if (claims.containsKey(path)) {
+                return extractArrayAsStringList(claims.get(path));
             }
             return List.of();
         }
-        String[] path = claimPath.split("\\.");
-        JsonValue current = claims;
+    }
 
-        for (int i = 0; i < path.length; i++) {
-            if (current instanceof JsonObject obj && obj.containsKey(path[i])) {
-                current = obj.get(path[i]);
-            } else {
-                return List.of(); // path not found
-            }
+    private static List<String> extractArrayAsStringList(JsonValue value) {
+        if (value == null) {
+            return List.of();
         }
 
-        if (current instanceof JsonArray array) {
+        if (value instanceof JsonArray array) {
             return array.getValuesAs(v -> v.toString().replace("\"", ""));
         }
 
+        // If it's not an array, return empty list
         return List.of();
     }
 }
