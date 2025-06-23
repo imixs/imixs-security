@@ -60,7 +60,11 @@ public class OidcConfig implements Serializable {
     String scope;
 
     @Inject
-    @ConfigProperty(name = "OIDCCONFIG_ROLES")
+    @ConfigProperty(name = "OIDCCONFIG_CLAIM_CALLERNAME", defaultValue = "preferred_username")
+    Optional<String> claimCallerName;
+
+    @Inject
+    @ConfigProperty(name = "OIDCCONFIG_CLAIM_ROLES")
     Optional<String> claimRolePath;
 
     private JsonObject config;
@@ -87,6 +91,13 @@ public class OidcConfig implements Serializable {
 
     public String getRedirectURI() {
         return redirectURI;
+    }
+
+    public String getClaimCallerName() {
+        if (claimCallerName.isPresent()) {
+            return claimCallerName.get();
+        }
+        return null; // not defined
     }
 
     public String getClaimRolePath() {

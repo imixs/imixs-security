@@ -77,13 +77,26 @@ public class TokenValidator {
         }
     }
 
-    public static String extractUsername(JsonObject claims) {
-        if (claims.containsKey("preferred_username")) {
-            return claims.getString("preferred_username");
-        } else if (claims.containsKey("sub")) {
-            return claims.getString("sub");
+    /**
+     * This method extract the caller name from the claim object. If not provided
+     * the method will default to preferred_username|sub|name
+     * 
+     * @param claims
+     * @param claimCallerName
+     * @return
+     */
+    public static String extractUsername(JsonObject claims, String claimCallerName) {
+        if (claimCallerName == null || claimCallerName.isBlank()) {
+            if (claims.containsKey("preferred_username")) {
+                return claims.getString("preferred_username");
+            } else if (claims.containsKey("sub")) {
+                return claims.getString("sub");
+            } else {
+                return claims.getString("name");
+            }
         }
-        return null;
+
+        return claims.getString(claimCallerName);
     }
 
     /**
