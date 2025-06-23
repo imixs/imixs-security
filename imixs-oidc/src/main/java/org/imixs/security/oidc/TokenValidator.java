@@ -95,8 +95,12 @@ public class TokenValidator {
                 return claims.getString("name");
             }
         }
-
-        return claims.getString(claimCallerName);
+        try {
+            return claims.getString(claimCallerName);
+        } catch (NullPointerException e) {
+            logger.severe("├── ❌ error failed to resolve '" + claimCallerName + "' from claim!");
+        }
+        return null;
     }
 
     /**

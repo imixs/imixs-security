@@ -24,8 +24,11 @@ import jakarta.servlet.http.HttpServletRequest;
  * 
  * It also allows extracting standard claims like username and roles from the
  * token.
+ * 
+ * In addition the BearerTokenValidator supports fetching additional claims
+ * from the UserInfo endpoint when needed.
+ * 
  */
-// @ApplicationScoped
 @RequestScoped
 public class BearerTokenValidator {
 
@@ -40,6 +43,9 @@ public class BearerTokenValidator {
     @Inject
     TokenValidator tokenValidator;
 
+    @Inject
+    UserInfoService userInfoService;
+
     public jakarta.security.enterprise.AuthenticationStatus handle(HttpServletRequest request,
             HttpMessageContext context) {
 
@@ -49,48 +55,58 @@ public class BearerTokenValidator {
         if (debug) {
             logger.fine("│   ├── Authorization header: " + authHeader);
         }
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length());
             if (debug) {
                 logger.info("├── Bearer token validation...");
             }
+
             try {
-                // check signature + expires date
+                // Validate token signature and expiration
                 Map<String, RSAKey> publicKeys = oidcConfig.getJwks();
                 if (!TokenValidator.isTokenValid(token, publicKeys)) {
                     logger.warning("│   ├── ❌ invalid JWT-Token (signature/expires)");
                     return context.responseUnauthorized();
                 }
 
-                // extract Claims
-                JsonObject claims = TokenValidator.decodeJwtPayload(token);
+                // Extract initial claims from token
+                JsonObject tokenClaims = TokenValidator.decodeJwtPayload(token);
                 if (debug) {
-                    logger.info("│   ├── claims=" + claims);
+                    logger.info("│   ├── token claims=" + tokenClaims);
                 }
-                String username = TokenValidator.extractUsername(claims, oidcConfig.getClaimCallerName());
+
+                // For Bearer tokens, the access token IS the token itself
+                // Fetch additional user info if available
+                JsonObject enrichedClaims = userInfoService.fetchAndMergeUserInfo(token, tokenClaims);
+
+                // Extract username and roles from enriched claims
+                String username = TokenValidator.extractUsername(enrichedClaims, oidcConfig.getClaimCallerName());
                 if (username == null || username.isBlank()) {
-                    logger.warning("│   ├── ❌ no username found in token.");
+                    logger.warning("│   ├── ❌ no username found in claims.");
                     return context.responseUnauthorized();
                 }
 
-                List<String> roles = TokenValidator.extractRoles(claims, oidcConfig.getClaimRolePath());
+                List<String> roles = TokenValidator.extractRoles(enrichedClaims, oidcConfig.getClaimRolePath());
                 if (debug) {
                     logger.info("│   ├── username=" + username);
                     if (roles != null && !roles.isEmpty()) {
                         logger.info("│   ├── roles=" + String.join(", ", roles));
                     } else {
                         logger.warning("│   ├── unable to resolve roles");
-                        logger.warning("│   ├── claims=" + claims);
+                        logger.warning("│   ├── claims=" + enrichedClaims);
                     }
                 }
+
                 if (debug) {
                     logger.info("├── ✅ Authorization successful ");
                 }
 
-                // Provide requestScoped claim context
-                oidcContext.initialize(claims);
+                // Provide request-scoped claim context with enriched claims
+                oidcContext.initialize(enrichedClaims);
 
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
+
             } catch (Exception e) {
                 logger.warning("Invalid JWT token: " + e.getMessage());
                 return context.responseUnauthorized();

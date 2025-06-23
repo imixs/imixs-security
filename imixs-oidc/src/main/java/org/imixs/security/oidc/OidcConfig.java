@@ -67,6 +67,10 @@ public class OidcConfig implements Serializable {
     @ConfigProperty(name = "OIDCCONFIG_CLAIM_ROLES")
     Optional<String> claimRolePath;
 
+    @Inject
+    @ConfigProperty(name = "OIDCCONFIG_ENABLE_USERINFO", defaultValue = "false")
+    boolean enableUserInfo;
+
     private JsonObject config;
 
     private Map<String, RSAKey> cachedJwks;
@@ -165,6 +169,10 @@ public class OidcConfig implements Serializable {
 
     public String getProviderUri() {
         return providerURI;
+    }
+
+    public boolean isUserInfoEnabled() {
+        return enableUserInfo;
     }
 
     /**

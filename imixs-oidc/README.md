@@ -60,6 +60,7 @@ The OpenID Client configuration attributes can be configured via Microprofile Co
 | OIDCCONFIG_SCOPE            | optional scopes separated by spaces - defaults to "openid profile email" |
 | OIDCCONFIG_CLAIM_CALLERNAME | optional caller name from the claim                                      |
 | OIDCCONFIG_CLAIM_ROLES      | optional roles path within the claim                                     |
+| OIDCCONFIG_ENABLE_USERINFO  | optional enable userinfo - default is false                              |
 
 Note that the module provides a redirect servlet with the endpoint `/callback` this is the endpoint typically used by the identity provider as the callback uri. You will find more information about how to setup your identity provider in the [Imixs Office Workflow OIDC documentation pages](https://doc.office-workflow.com/auth/oidc/keycloak.html).
 
@@ -78,6 +79,10 @@ You can configure the claim path used for extracting user roles from the access 
     OIDCCONFIG_ROLES=realm_access.roles
 
 This allows the application to support different OIDC providers like Keycloak, Auth0 or Azure AD without changing the source code. If no `OIDCCONFIG_ROLES` is defined, default locations will be applied to resolve the roles automatically.
+
+### UserInfo
+
+A common problem with commercial OIDC providers is the need to obtain the full claims only by calling the UserInfo endpoint after token validation. You can activate this feature by setting the environment variable `OIDCCONFIG_ENABLE_USERINFO=true`.
 
 ## Bearer Token Authentication
 
