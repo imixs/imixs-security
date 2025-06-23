@@ -52,13 +52,9 @@ public class UserProfileHandler implements Serializable {
         if (context != null
                 && (ProfileEvent.ON_PROFILE_CREATE == eventType || ProfileEvent.ON_PROFILE_LOGIN == eventType)) {
 
-            logger.info("--------------- IM Profile Event");
-
             // context.getClaims()
             String userName = "" + context.getUsername();
             String email = "" + context.getEmail();
-
-            logger.info("--------------- IM Profile Event username = " + userName);
 
             if (!email.equals(profile.getItemValueString("txtemail"))
                     || !userName.equals(profile.getItemValueString("txtusername"))) {

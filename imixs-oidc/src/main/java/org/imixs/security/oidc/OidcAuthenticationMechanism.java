@@ -56,7 +56,7 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 if (debug) {
-                    logger.info("│   ├── Bearer token detected");
+                    logger.info("├── 🪲 initiating ROPC login flow (Bearer token detected)");
                 }
                 return bearerTokenValidator.handle(request, context);
             }
@@ -76,14 +76,14 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
                 String username = (String) session.getAttribute("username");
                 @SuppressWarnings("unchecked")
                 var roles = (java.util.List<String>) session.getAttribute("roles");
-                logger.fine("│   ├── session user found: " + username);
+                logger.finest("│   ├── session user found: " + username);
 
                 // Provide requestScoped claim context
                 oidcContext.initialize((JsonObject) session.getAttribute("claims"));
                 return context.notifyContainerAboutLogin(() -> username, new HashSet<>(roles));
             }
             if (debug) {
-                logger.info("├── initiating OIDC login flow");
+                logger.info("├── 🪲 initiating OIDC login flow");
             }
             return oidcAuthFlowHandler.handle(request, response, context);
 

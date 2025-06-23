@@ -63,7 +63,9 @@ public class BearerTokenValidator {
 
                 // extract Claims
                 JsonObject claims = TokenValidator.decodeJwtPayload(token);
-
+                if (debug) {
+                    logger.info("│   ├── claims=" + claims);
+                }
                 String username = TokenValidator.extractUsername(claims, oidcConfig.getClaimCallerName());
                 if (username == null || username.isBlank()) {
                     logger.warning("│   ├── ❌ no username found in token.");

@@ -74,6 +74,9 @@ public class CallbackServlet extends HttpServlet {
             }
 
             JsonObject claims = TokenValidator.decodeJwtPayload(idToken);
+            if (debug) {
+                logger.info("│   ├── claims=" + claims);
+            }
             String username = TokenValidator.extractUsername(claims, oidcConfig.getClaimCallerName());
             List<String> roles = TokenValidator.extractRoles(claims, oidcConfig.getClaimRolePath());
             if (debug) {
@@ -84,7 +87,6 @@ public class CallbackServlet extends HttpServlet {
                     logger.warning("│   ├── unable to resolve roles");
                     logger.warning("│   ├── claims=" + claims);
                 }
-                logger.info("│   ├── access_token=" + token.access_token);
             }
             // Session setzen
             request.getSession().setAttribute("username", username);
