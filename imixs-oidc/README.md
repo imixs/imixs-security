@@ -194,7 +194,7 @@ See the following code example:
 
 The following section contains information about integration into different server platforms.
 
-## Protecting CDI Beans, EJBs and Pages
+### Protecting CDI Beans, EJBs and Pages
 
 Within you application code you work with the usual Jakarta EE security API. There is no need to use any additional OpenID configuration or annotations.
 
