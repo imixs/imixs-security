@@ -1,10 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>imixs-security</artifactId>
 		<groupId>org.imixs.security</groupId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>imixs-oidc</artifactId>
@@ -41,7 +39,7 @@
 		<connection>scm:git:git@github.com:imixs/imixs-security.git</connection>
 		<developerConnection>scm:git:git@github.com:imixs/imixs-security.git</developerConnection>
 		<url>https://github.com/imixs/imixs-security/</url>
-		<tag>HEAD</tag>
+		<tag>imixs-security-3.0.0</tag>
 	</scm>
 
 	<issueManagement>
