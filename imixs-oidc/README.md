@@ -271,7 +271,7 @@ Protecting JSF pages or static html pages can be done as usual in the web.xml fi
 
 ### Wildfly
 
-To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disable the integrated jaspi module.
+To Enable the OpenIdAuthenticationMechanismDefinition in Wildfly Server you need to disable the integrated jaspi module for all security-domains.
 
 This can be done either by the wildfly-cli command:
 
@@ -282,13 +282,37 @@ or by changing the standalone.xml file:
 ```xml
             .......
             <application-security-domains>
-                <!-- disable integrated jaspi! -->
-                <application-security-domain name="other" security-domain="ApplicationDomain" integrated-jaspi="false" />
+                <!-- Disable integrated jaspic -->
+                <application-security-domain name="other" security-domain="ApplicationDomain"
+                    integrated-jaspi="false" />
+                <application-security-domain name="imixsrealm" security-domain="imixsrealm"
+                    integrated-jaspi="false" />
             </application-security-domains>
             .......
 ```
 
-Find also other options for Wildfly here: https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
+**Note:** you need to disable it also for security domains used by your application!
+
+#### Debug Mode
+
+To activate the debug mode just add the following logger and set the log level for the console handler from “INFO” to “DEBUG” for your `standalone.xml`file:
+
+```xml
+    <profile>
+        <subsystem xmlns="urn:jboss:domain:logging:8.0">
+            <console-handler name="CONSOLE">
+                <level name="DEBUG" />
+                <formatter>
+                    <named-formatter name="COLOR-PATTERN" />
+                </formatter>
+            </console-handler>
+            ........
+            <!-- Imixs OIDC -->
+            <logger category="org.imixs.security.oidc">
+                <level name="DEBUG"/>
+            </logger>
+            ........
+```
 
 # Development
 
