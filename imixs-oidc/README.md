@@ -99,7 +99,7 @@ curl -X POST \
   -d "client_secret=your-client-secret" \
   -d "username=testuser" \
   -d "password=testpassword" \
-  "http://your-keycloak-host/realms/your-realm/protocol/openid-connect/token"
+  "https://your-keycloak-host/realms/your-realm/protocol/openid-connect/token"
 ```
 
 This returns a JSON object containing the access_token. Example:
