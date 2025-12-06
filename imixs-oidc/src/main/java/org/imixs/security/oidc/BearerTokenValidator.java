@@ -25,8 +25,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * It also allows extracting standard claims like username and roles from the
  * token.
  * 
- * In addition the BearerTokenValidator supports fetching additional claims
- * from the UserInfo endpoint when needed.
+ * In addition the BearerTokenValidator supports fetching additional claims from
+ * the UserInfo endpoint when needed.
  * 
  */
 @RequestScoped
@@ -50,6 +50,14 @@ public class BearerTokenValidator {
             HttpMessageContext context) {
 
         boolean debug = logger.isLoggable(Level.FINE);
+
+        // Check first if this resource is protected at all
+        if (!context.isProtected()) {
+            if (debug) {
+                logger.fine("├── unprotected resource, skipping authentication");
+            }
+            return context.doNothing();
+        }
 
         String authHeader = request.getHeader("Authorization");
         if (debug) {
@@ -76,7 +84,7 @@ public class BearerTokenValidator {
                     logger.info("│   ├── token claims=" + tokenClaims);
                 }
 
-                // For Bearer tokens, the access token IS the token itself
+                // For Bearer tokens, the access token is the token itself
                 // Fetch additional user info if available
                 JsonObject enrichedClaims = userInfoService.fetchAndMergeUserInfo(token, tokenClaims);
 
