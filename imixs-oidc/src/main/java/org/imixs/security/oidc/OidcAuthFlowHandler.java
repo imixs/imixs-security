@@ -3,7 +3,6 @@ package org.imixs.security.oidc;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.context.RequestScoped;
@@ -33,7 +32,7 @@ public class OidcAuthFlowHandler {
             return context.doNothing(); // close OIDC Flow
         }
 
-        boolean debug = logger.isLoggable(Level.FINE);
+        boolean debug = oidcConfig.isDebugMode();
 
         // store original request path
         String originalRequest = request.getRequestURI();

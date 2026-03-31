@@ -2,7 +2,6 @@ package org.imixs.security.oidc;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -51,7 +50,7 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
             HttpMessageContext context) throws AuthenticationException {
 
         try {
-            boolean debug = logger.isLoggable(Level.FINE);
+            boolean debug = oidcConfig.isDebugMode();
 
             if (debug) {
                 logger.info("├── ⚙ validateRequest: " + request.getRequestURI());

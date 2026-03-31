@@ -54,7 +54,7 @@ public class CallbackServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        boolean debug = logger.isLoggable(Level.FINE);
+        boolean debug = oidcConfig.isDebugMode();
         String code = request.getParameter("code");
         if (debug) {
             logger.info("├── callback code= " + code);

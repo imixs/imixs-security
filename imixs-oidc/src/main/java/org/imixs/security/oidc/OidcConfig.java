@@ -71,6 +71,10 @@ public class OidcConfig implements Serializable {
     @ConfigProperty(name = "OIDCCONFIG_ENABLE_USERINFO", defaultValue = "false")
     boolean enableUserInfo;
 
+    @Inject
+    @ConfigProperty(name = "OIDCCONFIG_DEBUGMODE", defaultValue = "false")
+    boolean debugMode;
+
     private JsonObject config;
 
     private Map<String, RSAKey> cachedJwks;
@@ -173,6 +177,10 @@ public class OidcConfig implements Serializable {
 
     public boolean isUserInfoEnabled() {
         return enableUserInfo;
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
     }
 
     /**

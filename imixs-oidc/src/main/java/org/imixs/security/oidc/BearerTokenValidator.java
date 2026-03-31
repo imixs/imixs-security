@@ -3,7 +3,6 @@ package org.imixs.security.oidc;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nimbusds.jose.jwk.RSAKey;
@@ -49,19 +48,19 @@ public class BearerTokenValidator {
     public jakarta.security.enterprise.AuthenticationStatus handle(HttpServletRequest request,
             HttpMessageContext context) {
 
-        boolean debug = logger.isLoggable(Level.FINE);
+        boolean debug = oidcConfig.isDebugMode();
 
         // Check first if this resource is protected at all
         if (!context.isProtected()) {
             if (debug) {
-                logger.fine("├── unprotected resource, skipping authentication");
+                logger.info("├── unprotected resource, skipping authentication");
             }
             return context.doNothing();
         }
 
         String authHeader = request.getHeader("Authorization");
         if (debug) {
-            logger.fine("│   ├── Authorization header: " + authHeader);
+            logger.info("│   ├── Authorization header: " + authHeader);
         }
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {

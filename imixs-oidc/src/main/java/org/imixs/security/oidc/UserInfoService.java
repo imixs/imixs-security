@@ -6,7 +6,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.context.RequestScoped;
@@ -41,12 +40,12 @@ public class UserInfoService {
         if (!oidcConfig.isUserInfoEnabled()) {
             return idTokenClaims;
         }
-        boolean debug = logger.isLoggable(Level.FINE);
+        boolean debug = oidcConfig.isDebugMode();
 
         String userInfoEndpoint = oidcConfig.getUserinfoEndpoint();
         if (userInfoEndpoint == null || userInfoEndpoint.isEmpty()) {
             if (debug) {
-                logger.fine("│   ├── No UserInfo endpoint configured, using ID token claims only");
+                logger.info("│   ├── No UserInfo endpoint configured, using ID token claims only");
             }
             return idTokenClaims;
         }
@@ -61,9 +60,9 @@ public class UserInfoService {
                 logger.info("│   ├── Fetching UserInfo from: " + userInfoEndpoint);
             }
 
-            JsonObject userInfo = fetchUserInfo(accessToken, userInfoEndpoint);
+            JsonObject userInfo = fetchUserInfo(accessToken, userInfoEndpoint, debug);
             if (userInfo != null) {
-                return mergeClaimsWithUserInfo(idTokenClaims, userInfo);
+                return mergeClaimsWithUserInfo(idTokenClaims, userInfo, debug);
             } else {
                 logger.warning("│   ├── UserInfo request failed, using ID token claims only");
                 return idTokenClaims;
@@ -78,7 +77,7 @@ public class UserInfoService {
     /**
      * Makes the actual HTTP request to the UserInfo endpoint
      */
-    private JsonObject fetchUserInfo(String accessToken, String userInfoEndpoint)
+    private JsonObject fetchUserInfo(String accessToken, String userInfoEndpoint, boolean debug)
             throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
@@ -94,7 +93,9 @@ public class UserInfoService {
         if (response.statusCode() == 200) {
             try (JsonReader reader = Json.createReader(new StringReader(response.body()))) {
                 JsonObject userInfo = reader.readObject();
-                logger.fine("│   ├── UserInfo response: " + userInfo);
+                if (debug) {
+                    logger.info("│   ├── UserInfo response: " + userInfo);
+                }
                 return userInfo;
             }
         } else {
@@ -108,7 +109,7 @@ public class UserInfoService {
      * Merges claims from ID token with UserInfo response.
      * UserInfo takes precedence for overlapping claims.
      */
-    private JsonObject mergeClaimsWithUserInfo(JsonObject idTokenClaims, JsonObject userInfo) {
+    private JsonObject mergeClaimsWithUserInfo(JsonObject idTokenClaims, JsonObject userInfo, boolean debug) {
         // Start with ID token claims as base
         var mergedBuilder = Json.createObjectBuilder();
 
@@ -121,7 +122,9 @@ public class UserInfoService {
         });
 
         JsonObject merged = mergedBuilder.build();
-        logger.fine("│   ├── Merged claims: " + merged);
+        if (debug) {
+            logger.info("│   ├── Merged claims: " + merged);
+        }
         return merged;
     }
 }

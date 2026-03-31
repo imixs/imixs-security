@@ -53,7 +53,7 @@ The OpenID Client configuration attributes can be configured via Microprofile Co
 
 | Environment Param           | Description                                                              |
 | --------------------------- | ------------------------------------------------------------------------ |
-| OIDCCONFIG_ISSUERURI        | endpoint for identity provider                                           |
+| OIDCCONFIG_PROVIDERURI      | endpoint for identity provider                                           |
 | OIDCCONFIG_CLIENTID         | OIDC Client ID                                                           |
 | OIDCCONFIG_CLIENTSECRET     | Client secret                                                            |
 | OIDCCONFIG_REDIRECTURI      | Redirect URI - application address with /callback uri                    |
@@ -61,6 +61,7 @@ The OpenID Client configuration attributes can be configured via Microprofile Co
 | OIDCCONFIG_CLAIM_CALLERNAME | optional caller name from the claim                                      |
 | OIDCCONFIG_CLAIM_ROLES      | optional roles path within the claim                                     |
 | OIDCCONFIG_ENABLE_USERINFO  | optional enable userinfo - default is false                              |
+| OIDCCONFIG_DEBUG            | enable/disable the debug mode - default is false                         |
 
 Note that the module provides a redirect servlet with the endpoint `/callback` this is the endpoint typically used by the identity provider as the callback uri. You will find more information about how to setup your identity provider in the [Imixs Office Workflow OIDC documentation pages](https://doc.office-workflow.com/auth/oidc/keycloak.html).
 
