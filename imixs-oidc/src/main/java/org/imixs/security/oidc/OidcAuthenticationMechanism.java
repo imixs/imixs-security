@@ -53,11 +53,16 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
         try {
             boolean debug = logger.isLoggable(Level.FINE);
 
-            // skip authentication for unprotected resources
-            if (!context.isProtected()) {
-                return context.doNothing();
+            if (debug) {
+                logger.info("├── ⚙ validateRequest: " + request.getRequestURI());
+                // skip authentication for unprotected resources
+                if (!context.isProtected()) {
+                    logger.info("│   ├── validateRequest - isProtected=FALSE - skip Authorization");
+                    return context.doNothing();
+                } else {
+                    logger.info("│   ├── validateRequest - isProtected=TRUE - starting Authorization....");
+                }
             }
-
             // Test for Bearer token
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
